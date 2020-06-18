@@ -516,10 +516,81 @@ def triNet(sample,short=5, long=15, freq='60min'):
     return sample
 
 
+def triNetV2detect(codes,start='2019-01-01',freq='15min',short=5,long=10):
+    #get today's date in %Y-%m-%d
+    cur = datetime.datetime.now()
+    mon = str(cur.month)
+    day = str(cur.day)
+    if (re.match('[0-9]{1}', mon) and len(mon) == 1):
+        mon = '0' + mon
+    if (re.match('[0-9]{1}', day) and len(day) == 1):
+        day = '0' + day
+
+    et = str(cur.year) + '-' + mon + '-' + day
+
+
+
+    wstart='2018-01-01'
+    buyres = []
+    sellres = []
+    #now let's get today data from net, those are DataStructure
+    daydata = QA.QA_fetch_stock_day(codes,start,et)
+    #also min data for analysis
+    mindata = QA.QA_fetch_stock_min_adv(codes,start,et,frequence=freq)
+
+
+    for code in codes:
+        sample  = daydata.select_code(code).data #this is only the data till today, then contact with daydata ms.select_code('000977').data
+        #now deal with week status
+        wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+        temp = QA.QA_fetch_stock_day_adv(code, wstart, wend).data
+        wd = wt.wds(temp)
+        wd = wt.weektrend(wd)
+        direction = wd.loc[-1].change  #now we got week trend
+
+        #deal with 15 min status
+        start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
+        end = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+        md = mindata.select_code(code).data
+
+        m15 = QA.QA_fetch_get_stock_min('tdx', code, et, et, level=freq)
+        #convert online data to adv data(basically multi_index setting, drop unused column and contact 2 dataframe as 1)
+        #this is network call
+        m15.drop(['date', 'date_stamp', 'time_stamp'], axis=1, inplace=True)
+        m15.set_index(['datetime','code'])
+        m15.rename(columns={'vol': 'volume'}, inplace=True)
+        ms = pd.concat([m15, md], axis=0)
+        ms.sort_index(inplace=True)
+
+        ms['short'] = QA.EMA(ms.close, short)
+        ms['long'] = QA.EMA(ms.close, long)
+        CROSS_5 = QA.CROSS(ms.short, ms.long)
+        CROSS_15 = QA.CROSS(ms.long, ms.short)
+
+        C15 = np.where(CROSS_15 == 1, 3, 0)
+        m = np.where(CROSS_5 == 1, 1, C15)
+        # single = m[:-1].tolist()
+        # single.insert(0, 0)
+        ms['single'] = m.tolist()
+        sig = [0]
+        if (freq == '60min'):
+            anchor = -2
+        elif (freq == '30min'):
+            anchor = -4
+        elif (freq == '15min'):
+            anchor = -8
+
+        sig = ms[-16:].single.sum()
+        if(direction>0 and sig ==1):
+            buyres.append(code)
+        elif(direction<0 and sig ==3):
+            sellres.append(code)
+    return buyres,sellres
+
+
 def triNetv2(sample,short=5, long=10, freq='15min'):
     #to get Week and 60 minutes syntony together
     #get week trend
-
     #60 76, 30 79, 30 74 more
     #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
     import quant.weekTrend as wt
@@ -1271,6 +1342,7 @@ def backtest():
     #A50 93175/10
     #ind = data.add_func(triNet)
     #6/10 close
+    #trinet2 with 15 on 3 codelist
     ind = data.add_func(triNetv2)
     #ind = data.add_func(triNetDay)
     #ind = data.add_func(bollStrategy)
