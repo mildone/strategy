@@ -112,7 +112,7 @@ def triNetV2detect(codes, start='2019-01-01', freq='15min', short=5, long=10):
         m15.drop(['date', 'date_stamp', 'time_stamp'], axis=1, inplace=True)
 
         m15.rename(columns={'vol': 'volume'}, inplace=True)
-        ms = pd.concat([m15, md], axis=0)
+        ms = pd.concat([m15, md], axis=0,sort=True)
         ms.sort_index(inplace=True, level='datetime')
 
         ms['short'] = QA.EMA(ms.close, short)
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     message = list(set(buy))
 
     print("sending mail")
-    if(len(buy)>0):
+    if(len(buy)>2):
         sendmail(' '.join(message))
     
 
