@@ -56,14 +56,16 @@ def weektrend(sample):
     from functools import reduce
     sample['EMA12']= pd.Series.ewm(sample.close, span=12, min_periods=12 - 1, adjust=True).mean()
     sample['EMA26']= pd.Series.ewm(sample.close, span=26, min_periods=26 - 1, adjust=True).mean()
+    sample['EMA5'] = pd.Series.ewm(sample.close, span=5, min_periods=5 - 1, adjust=True).mean()
+    sample['EMA10'] = pd.Series.ewm(sample.close, span=10, min_periods=10 - 1, adjust=True).mean()
     sample['EMA13']=pd.Series.ewm(sample.close,span=13,min_periods=13-1,adjust=True).mean()
     sample['MACDQ']= sample['EMA12']-sample['EMA26']
     sample['MACDSIG']=pd.Series.ewm(sample.MACDQ, span=9, min_periods=9 - 1, adjust=True).mean()
     sample['MACDBlock']=sample['MACDQ']-sample['MACDSIG']
-
+    sample['trend']=sample['EMA5']-sample['EMA10']
     pp_array = [float(close) for close in sample.MACDBlock]
     temp_array = [(price1, price2) for price1, price2 in zip(pp_array[:-1], pp_array[1:])]
-    change = list(map(lambda pp: reduce(lambda a, b: round((b - a) / a, 3), pp), temp_array))
+    change = list(map(lambda pp: reduce(lambda a, b: round((b - a) / a, 3) if a!=0 else 0, pp), temp_array))
     change.insert(0, 0)
     sample['change'] = change
     '''

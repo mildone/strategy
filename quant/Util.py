@@ -1057,14 +1057,14 @@ def doubleAvgmin(dd, short=5, long=15, freq='60min'):
 
     return dd
 
-def PlotBySe(day):
+def PlotBySe(day,period=26):
     import quant.MACD as macd
     print(day)
     quotes = macd.MINcandlestruct(day, dayindex, dayformate)
     # N = sample.index.get_level_values(index).shape[0]
     N = day.shape[0]
     ind = np.arange(N)
-
+    day['EMA']=QA.EMA(day.close,period)
     def format_date(x, pos=None):
         thisind = np.clip(int(x + 0.5), 0, N - 1)
         return day.index.get_level_values(dayindex)[thisind].strftime(dayformate)
@@ -1076,6 +1076,7 @@ def PlotBySe(day):
 
 
     mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
+    ax2.plot(ind,day.EMA,'r-',label='EMA')
 
     for i in range(N):
         if (day.single[i] == 1):
@@ -1086,7 +1087,7 @@ def PlotBySe(day):
     ax2.grid(True)
     ax2.legend(loc='best')
     fig.autofmt_xdate()
-    fig.show()
+    plt.show()
 
 def ATRStrategy(sample):
     # no good at all
@@ -1108,7 +1109,7 @@ def getWeekDate(daytime):
     #return Timestamp('2020-05-11 00:00:00')
     return daytime+dateutil.relativedelta.relativedelta(days=(6-daytime.dayofweek))
 
-def triNetv3(sample,short=5, long=10, freq='15min'):
+def triNetv3(sample,short=5, long=10, freq='30min'):
     #to get Week and 60 minutes syntony together
     #get week trend
     #A50 64% 30 5 15 12/10
@@ -1351,7 +1352,7 @@ def backtestv2():
     cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
     #endtime = '2020-06-01'
-    endtime = '2019-01-01'
+    endtime = '2020-01-01'
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
@@ -1533,7 +1534,12 @@ def etfverify():
 
 
 def main():
-    backtestv2()
+    #backtestv2()
+    test = QA.QA_fetch_stock_day_adv('000977','2018-01-01','2019-01-01').data
+    test['single']=0
+    #triNetv3(test)
+    PlotBySe(test)
+
     #etfverify()
 
 if __name__=="__main__":
