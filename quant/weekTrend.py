@@ -89,6 +89,8 @@ def weektrend(sample):
 
     return sample
 
+
+
 def weekPlot(sample):
     quotes = []
     N = sample.shape[0]

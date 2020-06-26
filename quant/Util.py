@@ -1140,7 +1140,7 @@ def triNetv5(sample,short=5, long=10, freq='30min'):
 
 
 
-def triNetv4(sample,short=5, long=10, freq='30min'):
+def triNetv4(sample,short=5, long=10, freq='15min'):
     #to get Week and 60 minutes syntony together
     #get week trend
     #60 76, 30 79, 30 74 more
@@ -1291,7 +1291,7 @@ def triNetv6(sample,short=5, long=10, freq='15min'):
         sing = temp.single.sum()+tmp.single.sum()
         if(direction==1 and sing==1):
             sig.append(1)
-        elif(direction==3 and sing>1):
+        elif(direction==3 and sing==3):
             sig.append(3)
         else:
             sig.append(0)
@@ -1307,6 +1307,61 @@ def triNetv6(sample,short=5, long=10, freq='15min'):
 
     return sample
 
+def EMA_MA(sample,period=20):
+    import quant.weekTrend as wt
+    #get day level status
+    sample['MA'] = QA.MA(sample.close,period)
+    sample['EMA'] = QA.EMA(sample.close,period)
+    #sample.fillna(method='ffill',inplace=True)
+    #wstart = '2010-01-01'
+    code = sample.index.get_level_values('code')[-1]
+    wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    #temp = QA.QA_fetch_stock_day_adv(code,wstart,wend).data
+    #wd = wt.wds(temp)
+    #wd = wt.weektrend(wd)
+
+    start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
+    end = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    CROSS_5 = QA.CROSS(sample.EMA, sample.MA)
+    CROSS_15 = QA.CROSS(sample.MA, sample.EMA)
+
+    C15 = np.where(CROSS_15 == 1, 3, 0)
+    m = np.where(CROSS_5 == 1, 1, C15)
+    # single = m[:-1].tolist()
+    # single.insert(0, 0)
+    #single = m[:-1].tolist()
+    #single.insert(0, 0)
+    sample['single'] = m.tolist()
+    #sample['single']=single
+    return sample
+
+def EMA_MAv2(sample,period=5):
+    import quant.weekTrend as wt
+    #get day level status
+    sample['MA'] = QA.MA(sample.close,period)
+    sample['EMA'] = QA.EMA(sample.close,period)
+    #sample.fillna(method='ffill',inplace=True)
+    #wstart = '2010-01-01'
+    code = sample.index.get_level_values('code')[-1]
+    wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    #temp = QA.QA_fetch_stock_day_adv(code,wstart,wend).data
+    #wd = wt.wds(temp)
+    #wd = wt.weektrend(wd)
+
+    start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
+    end = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    CROSS_5 = QA.CROSS(sample.EMA, sample.MA)
+    CROSS_15 = QA.CROSS(sample.MA, sample.EMA)
+
+    C15 = np.where(CROSS_15 == 1, 3, 0)
+    m = np.where(CROSS_5 == 1, 1, C15)
+    # single = m[:-1].tolist()
+    # single.insert(0, 0)
+    single = m[:-1].tolist()
+    single.insert(0, 0)
+    #sample['single'] = m.tolist()
+    sample['single']=single
+    return sample
 
 
 
@@ -1362,7 +1417,7 @@ def getWeekDate(daytime):
     #return Timestamp('2020-05-11 00:00:00')
     return daytime+dateutil.relativedelta.relativedelta(days=(6-daytime.dayofweek))
 
-def triNetv3(sample,short=5, long=10, freq='30min'):
+def triNetv3(sample,short=5, long=10, freq='15min'):
     #to get Week and 60 minutes syntony together
     #get week trend
     #A50 64% 30 5 15 12/10
@@ -1605,7 +1660,7 @@ def backtestv2():
     cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
     #endtime = '2020-06-01'
-    endtime = '2020-06-01'
+    endtime = '2020-06-20'
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
@@ -1628,7 +1683,8 @@ def backtestv2():
     #45/10 with a50, that's -1
     #ind = data.add_func(doubleAvgmin)
 
-    ind = data.add_func(triNetv6)
+    #ind = data.add_func(triNetv3)
+    ind = data.add_func(EMA_MAv2)
 
 
     #ind = data.add_func(bollStrategy)
