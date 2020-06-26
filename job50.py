@@ -80,19 +80,19 @@ def triNetV2detect(codes, start='2019-01-01', freq='15min', short=5, long=10):
         print('deal with {}'.format(code))
         sample = daydata.select_code(
             code).data  # this is only the data till today, then contact with daydata ms.select_code('000977').data
-        '''
+
         try:
-            td = QA.QA_fetch_get_stock_day('tdx',code,et,et,if_fq='bfq')
+            td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,et,et)
             print(td)
         except:
             print('None and try again')
-            td = QA.QA_fetch_get_stock_day('tdx',code,et,et,if_fq='bfq')
+            td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,et,et,if_fq='bfq')
         td.set_index(['date','code'],inplace=True)
         td.drop(['date_stamp'], axis=1, inplace=True)
         td.rename(columns={'vol': 'volume'}, inplace=True)
-        sample = pd.concat([td, test], axis=0)
+        sample = pd.concat([td, sample], axis=0,sort=True)
         sample.sort_index(inplace=True,level='date')
-        '''
+
         # now deal with week status
         # wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
         # temp = QA.QA_fetch_stock_day_adv(code, wstart, wend).data

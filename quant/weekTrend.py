@@ -63,6 +63,18 @@ def weektrend(sample):
     sample['MACDSIG']=pd.Series.ewm(sample.MACDQ, span=9, min_periods=9 - 1, adjust=True).mean()
     sample['MACDBlock']=sample['MACDQ']-sample['MACDSIG']
     sample['trend']=sample['EMA5']-sample['EMA10']
+
+
+    CROSS_5 = QA.CROSS(sample.EMA5, sample.EMA10)
+    CROSS_15 = QA.CROSS(sample.EMA10, sample.EMA5)
+
+    C15 = np.where(CROSS_15 == 1, 3, 0)
+    m = np.where(CROSS_5 == 1, 1, C15)
+    # single = m[:-1].tolist()
+    # single.insert(0, 0)
+    sample['ws'] = m.tolist()
+
+
     pp_array = [float(close) for close in sample.MACDBlock]
     temp_array = [(price1, price2) for price1, price2 in zip(pp_array[:-1], pp_array[1:])]
     change = list(map(lambda pp: reduce(lambda a, b: round((b - a) / a, 3) if a!=0 else 0, pp), temp_array))
