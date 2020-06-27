@@ -1307,6 +1307,79 @@ def triNetv6(sample,short=5, long=10, freq='15min'):
 
     return sample
 
+
+def PlotBySe(day, period=26):
+    import quant.MACD as macd
+    day['EMA120'] = QA.EMA(day.close, 120)
+    day['EMA60'] = QA.EMA(day.close, 60)
+    day['EMA20'] = QA.EMA(day.close, 20)
+    day['BIAS'] = (day.close - day.EMA120) * 100 / day.EMA120
+    print(day)
+    quotes = macd.MINcandlestruct(day, dayindex, dayformate)
+    # N = sample.index.get_level_values(index).shape[0]
+    N = day.shape[0]
+    ind = np.arange(N)
+    day['EMA'] = QA.EMA(day.close, period)
+
+    def format_date(x, pos=None):
+        thisind = np.clip(int(x + 0.5), 0, N - 1)
+        return day.index.get_level_values(dayindex)[thisind].strftime(dayformate)
+
+    fig = plt.figure()
+    fig.set_size_inches(40.5, 20.5)
+    ax2 = fig.add_subplot(2, 1, 1)
+    ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
+
+    mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
+    ax2.plot(ind, day.EMA120, 'r-', label='EMA120')
+    ax2.plot(ind, day.EMA60, 'blue', label='EMA60')
+    ax2.plot(ind, day.EMA20, 'purple', label='EMA20')
+    '''
+    for i in range(N):
+        if (day.single[i] == 1):
+            ax2.axvline(x=i, ls='--', color='red')
+        if (day.single[i] == 3):
+            ax2.axvline(x=i, ls='--', color='green')
+    '''
+    ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+    ax2.grid(True)
+    ax2.legend(loc='best')
+    fig.autofmt_xdate()
+
+    ax3 = fig.add_subplot(2, 1, 2, sharex=ax2)
+    ax3.bar(ind, day.BIAS, color='blue')
+    # ax3.axhline(y=0,ls='--',color='yellow')
+    ax3.grid(True)
+    ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+    fig.autofmt_xdate()
+
+    plt.show()
+
+def TrendFinder(sample,short=5,mid=10,long=30):
+    sample['ES'] = QA.EMA(sample.close,short)
+    sample['EM']= QA.EMA(sample.close,mid)
+    sample['EL'] = QA.EMA(sample.close, long)
+    sample['CE'] = sample.close/sample.ES
+    sample['SM'] = sample.ES/sample.EM
+    sample['ML'] = sample.EM/sample.EL
+    sig = []
+    buy = 0
+    sell = 0
+    for i in range(sample.shape[0]):
+        if(sample.CE[i]>1 and sample.SM[i]>1 and sample.ML[i]>1 and buy ==0):
+            sig.append(1)
+            buy = 1
+            sell = 0
+        elif(sample.CE[i]<1 and sample.SM[i]<1 and sample.ML[i]<1 and sell==0):
+            sig.append(3)
+            sell = 1
+            buy = 0
+        else:
+            sig.append(0)
+    sample['single'] = sig
+    return sample
+
+
 def EMA_MA(sample,period=20):
     import quant.weekTrend as wt
     #get day level status
@@ -1335,7 +1408,7 @@ def EMA_MA(sample,period=20):
     #sample['single']=single
     return sample
 
-def EMA_MAv2(sample,period=5):
+def EMA_MAv2(sample,period=20):
     import quant.weekTrend as wt
     #get day level status
     sample['MA'] = QA.MA(sample.close,period)
@@ -1664,7 +1737,7 @@ def backtestv2():
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
-    # data = loadLocalData(codelist, '2019-01-01', endtime)
+    # data = loadLocalData(cl, '2019-01-01', endtime)
     data = loadLocalData(cl, '2019-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
@@ -1684,8 +1757,13 @@ def backtestv2():
     #ind = data.add_func(doubleAvgmin)
 
     #ind = data.add_func(triNetv3)
-    ind = data.add_func(EMA_MAv2)
 
+    #7/10
+    #ind = data.add_func(EMA_MA)
+
+
+    #6/10
+    ind = data.add_func(TrendFinder)
 
     #ind = data.add_func(bollStrategy)
     # ind = data.add_func(nineTurn)
