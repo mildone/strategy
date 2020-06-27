@@ -20,7 +20,7 @@ import mpl_finance as mpf
 import quant.Util as uti
 
 
-def PriceBias(day, short=20, mid=60, long=120, type='SML'):
+def PriceBias(day, short=20, mid=60, long=120, type='SML',zoom=100):
     import quant.MACD as macd
     day['long'] = QA.EMA(day.close, long)
     day['mid'] = QA.EMA(day.close, mid)
@@ -30,6 +30,10 @@ def PriceBias(day, short=20, mid=60, long=120, type='SML'):
     day['SM'] = (day.short - day.mid) * 100 / day.mid
     day['ML'] = (day.mid - day.long) * 100 / day.long
     print(day)
+    if(zoom > day.shape[0]):
+        day = day[0:]
+    else:
+        day = day[0-zoom:]
     quotes = macd.MINcandlestruct(day, uti.dayindex, uti.dayformate)
     # N = sample.index.get_level_values(index).shape[0]
     N = day.shape[0]
@@ -45,9 +49,9 @@ def PriceBias(day, short=20, mid=60, long=120, type='SML'):
     ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
 
     mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
-    ax2.plot(ind, day.long, 'r-', label='EMA' + str(long))
-    ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid))
-    ax2.plot(ind, day.short, 'purple', label='EMA' + str(short))
+    ax2.plot(ind, day.long, 'r-', label='EMA' + str(long),linewidth = 0.7)
+    ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid),linewidth =0.7)
+    ax2.plot(ind, day.short, 'purple', label='EMA' + str(short),linewidth = 0.7)
     '''
     for i in range(N):
         if (day.single[i] == 1):
@@ -73,13 +77,13 @@ def PriceBias(day, short=20, mid=60, long=120, type='SML'):
 
     ax4 = fig.add_subplot(3, 1, 3, sharex=ax2)
     if ('S' in type):
-        ax4.plot(ind, day.CS, 'r-', label='CS')
+        ax4.plot(ind, day.CS, 'r-', label='CS',linewidth = 1)
     if ('M' in type):
-        ax4.plot(ind, day.SM, 'blue', label='SM')
+        ax4.plot(ind, day.SM, 'blue', label='SM',linewidth = 1)
     if ('L' in type):
         ax4.bar(ind, day.ML, color='grey')
     if ('B' in type):
-        ax4.bar(ind,day.BIAS, color = 'blue')
+        ax4.bar(ind,day.BIAS, color = 'grey')
     # ax3.axhline(y=0,ls='--',color='yellow')
     ax4.grid(True)
     ax4.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
@@ -88,7 +92,7 @@ def PriceBias(day, short=20, mid=60, long=120, type='SML'):
     plt.show()
 
 
-def forceANA(code):
+def forceANA(code,zo=100,ty = 'SMLB',cg = 'stock', st = 20, mi = 60, ln = 120):
     cur = datetime.datetime.now()
     mon = str(cur.month)
     day = str(cur.day)
@@ -98,11 +102,16 @@ def forceANA(code):
         day = '0' + day
 
     et = str(cur.year) + '-' + mon + '-' + day
-    start = '2010-01-01'
-    dd = QA.QA_fetch_stock_day_adv(code,start,et).data
-    PriceBias(dd,type='SB')
-    
+    if(cg == 'stock'):
+        start = '2010-01-01'
+        dd = QA.QA_fetch_stock_day_adv(code,start,et).data
+        PriceBias(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln)
+    elif(cg == 'index'):
+        start = '2019-10-01'
+        dd = QA.QA_fetch_index_day_adv(code, start, et).data
+        PriceBias(dd, type=ty, zoom=zo, short = st, mid = mi, long = ln)
+
 
 
 if __name__ == "__main__":
-    forceANA('000977')
+    forceANA('515880',zo=300,ty = 'MB', cg = 'index', st = 10, mi = 20, ln = 30)
