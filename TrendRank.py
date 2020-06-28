@@ -17,6 +17,9 @@ import mpl_finance as mpf
 
 def TrendDivergence(day, short=20, mid=60, long=120):
     day['long'] = QA.EMA(day.close, long)
+    day['lo'] = QA.MA(day.close,long)
+    day['mi'] = QA.MA(day.close,mid)
+    day['sh'] = QA.MA(day.close,short)
     day['mid'] = QA.EMA(day.close, mid)
     day['short'] = QA.EMA(day.close, short)
     day['BIAS'] = (day.close - day.long) * 100 / day.long
@@ -52,7 +55,7 @@ def TrendRank(start = '2015-01-01'):
         sample = pd.concat([td, sample], axis=0, sort=True)
     return sample
 
-
+'''
 def jump(df):
     jumpratio = df.close.median() * 0.03
     from functools import reduce
@@ -78,6 +81,7 @@ def plot(day, short=20, mid=60, long=120):
     TrendDivergence(day)
     quotes = macd.MINcandlestruct(day, uti.dayindex, uti.dayformate)
     # N = sample.index.get_level_values(index).shape[0]
+
     N = day.shape[0]
     ind = np.arange(N)
 
@@ -86,14 +90,14 @@ def plot(day, short=20, mid=60, long=120):
         return day.index.get_level_values(uti.dayindex)[thisind].strftime(uti.dayformate)
 
     fig = plt.figure()
-    fig.set_size_inches(20.5, 10.5)
-    ax2 = fig.add_subplot(1, 1, 1)
+    fig.set_size_inches(40.5, 20.5)
+    ax2 = fig.add_subplot(2, 1, 1)
     ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
 
     mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
-    ax2.plot(ind, day.long, 'r-', label='EMA' + str(long),linewidth = 0.7)
-    ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid),linewidth =0.7)
-    ax2.plot(ind, day.short, 'purple', label='EMA' + str(short),linewidth = 0.7)
+    ax2.plot(ind, day.lo, 'r-', label='MA' + str(long),linewidth = 0.7)
+    ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid),linewidth =0.7)
+    ax2.plot(ind, day.sh, 'purple', label='MA' + str(short),linewidth = 0.7)
     #ax2.plot(100, 30, 'go', markersize=12, markeredgewidth=0.5,
              #markerfacecolor='None', markeredgecolor='green')
 
@@ -108,23 +112,31 @@ def plot(day, short=20, mid=60, long=120):
     ax2.legend(loc='best')
     fig.autofmt_xdate()
 
+    ax3 = fig.add_subplot(2, 1, 2, sharex=ax2)
+    bar_red = np.where(day.close > day.open, day.volume, 0)
+    bar_green = np.where(day.close < day.open, day.volume, 0)
+    ax3.bar(ind, bar_red, color='red')
+    ax3.bar(ind, bar_green, color='green')
+    # x3.bar(ind,day.BIAS,color='blue')
+    # ax3.axhline(y=0,ls='--',color='yellow')
+    ax3.grid(True)
+    ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+    fig.autofmt_xdate()
+
+
     plt.show()
 
 
-
-
-
+'''
 
 
 
 
 if __name__ == "__main__":
-    #res = TrendRank(start = '2015-01-01')
-    #res = res.sort_values(by='CS')
-    #print(res[-20:])
-    test = QA.QA_fetch_stock_day_adv('000977','2019-01-01','2020-06-23').data
-    jump(test)
-    plot(test)
+    res = TrendRank(start = '2015-01-01')
+    res = res.sort_values(by='CS')
+    print(res[-20:])
+
 
 
 
