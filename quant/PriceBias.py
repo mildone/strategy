@@ -1,3 +1,4 @@
+
 import datetime
 import re
 
@@ -52,6 +53,8 @@ def PriceBias(day, short=20, mid=60, long=120, type='SML',zoom=100):
     ax2.plot(ind, day.long, 'r-', label='EMA' + str(long),linewidth = 0.7)
     ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid),linewidth =0.7)
     ax2.plot(ind, day.short, 'purple', label='EMA' + str(short),linewidth = 0.7)
+    #ax2.plot(100, 30, 'go', markersize=12, markeredgewidth=0.5,
+             #markerfacecolor='None', markeredgecolor='green')
     '''
     for i in range(N):
         if (day.single[i] == 1):
@@ -114,4 +117,4 @@ def forceANA(code,zo=100,ty = 'SMLB',cg = 'stock', st = 20, mi = 60, ln = 120):
 
 
 if __name__ == "__main__":
-    forceANA('515880',zo=300,ty = 'MB', cg = 'index', st = 10, mi = 20, ln = 30)
+    forceANA('300097',zo=200,ty = 'SMB', cg = 'stock', st = 20, mi = 60, ln = 120)
