@@ -126,7 +126,6 @@ def plot(day, short=20, mid=60, long=120):
 
     plt.show()
 
-
 '''
 
 

@@ -78,6 +78,14 @@ def PriceBias(day, short=20, mid=60, long=120, type='SML',zoom=100):
     ax2.plot(ind, day.lo, 'r-', label='MA' + str(long),linewidth = 0.7)
     ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid),linewidth =0.7)
     ax2.plot(ind, day.sh, 'purple', label='MA' + str(short),linewidth = 0.7)
+    ratio = day.low.median()*0.03
+    ax2.plot(N-short,day.low[N-short]-ratio,'^', markersize=4, markeredgewidth=2, markerfacecolor='None', markeredgecolor='purple')
+    #ax2.axvline(x=N-short,ls='--',color='purple')
+    ax2.plot(N - mid, day.low[N - mid]-ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+             markeredgecolor='blue')
+    ax2.plot(N - long, day.low[N - long]-ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+             markeredgecolor='red')
+
     #ax2.plot(100, 30, 'go', markersize=12, markeredgewidth=0.5,
              #markerfacecolor='None', markeredgecolor='green')
     for i in range(N):
@@ -153,6 +161,6 @@ def forceANA(code,zo=100,ty = 'SMLB',cg = 'stock', st = 20, mi = 60, ln = 120):
 
 
 if __name__ == "__main__":
-    forceANA('002415',zo=600,ty = 'SMB', cg = 'stock', st = 20, mi = 60, ln = 120)
+    forceANA('515880',zo=600,ty = 'SMB', cg = 'index', st = 10, mi = 20, ln = 30)
 
 

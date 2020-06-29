@@ -48,6 +48,16 @@ def wds(df):
     return weekly_df
 
 
+def TrendDivergence(wk, short=20, mid=60, long=120):
+    wk['long'] = pd.Series.rolling(wk.close, long).mean()
+    wk['mid'] = pd.Series.rolling(wk.close, mid).mean()
+    wk['short'] = pd.Series.rolling(wk.close, short).mean()
+
+    wk['BIAS'] = (wk.close - wk.long) * 100 / wk.long
+    wk['CS'] = (wk.close - wk.short) * 100 / wk.short
+    wk['SM'] = (wk.short - wk.mid) * 100 / wk.mid
+    wk['ML'] = (wk.mid - wk.long) * 100 / wk.long
+    return wk
 
 
 
@@ -91,7 +101,7 @@ def weektrend(sample):
 
 
 
-def weekPlot(sample):
+def weekPlot(sample, short=20, mid=60, long=120):
     quotes = []
     N = sample.shape[0]
     ind = np.arange(N)
@@ -117,8 +127,9 @@ def weekPlot(sample):
     ax2.set_title("weekly candlestick", fontsize='xx-large', fontweight='bold')
 
     mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
-    ax2.plot(ind,sample.EMA13,'r-',label='EMA13')
-    ax2.plot(ind,sample.EMA26,'blue',label='EMA26')
+    ax2.plot(ind,sample.long,'r-',label='MA'+str(long))
+    ax2.plot(ind,sample.mid,'blue',label='MA'+str(mid))
+    ax2.plot(ind,sample.short,'grey',label='MA'+str(short))
     ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
     ax2.grid(True)
     ax2.legend(loc='best')
@@ -152,7 +163,7 @@ def weekPlot(sample):
     plt.legend()
     plt.savefig(r'week1.png')
     plt.close()
-    #fig.show()
+    #plt.show()
 
 
 
@@ -172,11 +183,12 @@ def weekDFANA(code,start='2018-01-01',end='current'):
     #print(sda)
 
 
-    wd = weekDF(sda)
+    wd = wds(sda)
     #print(wd)
 
     sample = wd
     weektrend(sample)
+    TrendDivergence(wd)
     #print(sample)
     weekPlot(sample)
 
