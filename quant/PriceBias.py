@@ -41,7 +41,7 @@ def jump(df):
     return df
 
 
-def PriceBias(day, short=20, mid=60, long=120, type='SML',zoom=100):
+def PriceBias(day, short=20, mid=60, long=120, type='SML',zoom=100,plot='M'):
     import quant.MACD as macd
     day['long'] = QA.EMA(day.close, long)
     day['mid'] = QA.EMA(day.close, mid)
@@ -75,9 +75,22 @@ def PriceBias(day, short=20, mid=60, long=120, type='SML',zoom=100):
     ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
 
     mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
-    ax2.plot(ind, day.lo, 'r-', label='MA' + str(long),linewidth = 0.7)
-    ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid),linewidth =0.7)
-    ax2.plot(ind, day.sh, 'purple', label='MA' + str(short),linewidth = 0.7)
+    if(plot=='M'):
+        ax2.plot(ind, day.lo, 'r-', label='MA' + str(long),linewidth = 0.7)
+        ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid),linewidth =0.7)
+        ax2.plot(ind, day.sh, 'purple', label='MA' + str(short),linewidth = 0.7)
+    elif(plot=='E'):
+        ax2.plot(ind, day.long, 'r-', label='EMA' + str(long), linewidth=0.7,ls='--')
+        ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid), linewidth=0.7,ls='--')
+        ax2.plot(ind, day.short, 'purple', label='EMA' + str(short), linewidth=0.7,ls='--')
+    elif(plot=='EM'):
+        ax2.plot(ind, day.lo, 'r-', label='MA' + str(long), linewidth=0.7)
+        ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid), linewidth=0.7)
+        ax2.plot(ind, day.sh, 'purple', label='MA' + str(short), linewidth=0.7)
+        ax2.plot(ind, day.long, 'r-', label='EMA' + str(long), linewidth=0.7,ls='--')
+        ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid), linewidth=0.7,ls='--')
+        ax2.plot(ind, day.short, 'purple', label='EMA' + str(short), linewidth=0.7,ls='--')
+
     ratio = day.low.median()*0.03
     ax2.plot(N-short,day.low[N-short]-ratio,'^', markersize=4, markeredgewidth=2, markerfacecolor='None', markeredgecolor='purple')
     #ax2.axvline(x=N-short,ls='--',color='purple')
@@ -139,7 +152,7 @@ def PriceBias(day, short=20, mid=60, long=120, type='SML',zoom=100):
     plt.show()
 
 
-def forceANA(code,zo=100,ty = 'SMLB',cg = 'stock', st = 20, mi = 60, ln = 120):
+def forceANA(code,zo=100,ty = 'SMLB',cg = 'stock', st = 20, mi = 60, ln = 120,pt='M'):
     cur = datetime.datetime.now()
     mon = str(cur.month)
     day = str(cur.day)
@@ -152,15 +165,15 @@ def forceANA(code,zo=100,ty = 'SMLB',cg = 'stock', st = 20, mi = 60, ln = 120):
     if(cg == 'stock'):
         start = '2010-01-01'
         dd = QA.QA_fetch_stock_day_adv(code,start,et).data
-        PriceBias(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln)
+        PriceBias(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln,plot=pt)
     elif(cg == 'index'):
         start = '2019-10-01'
         dd = QA.QA_fetch_index_day_adv(code, start, et).data
-        PriceBias(dd, type=ty, zoom=zo, short = st, mid = mi, long = ln)
+        PriceBias(dd, type=ty, zoom=zo, short = st, mid = mi, long = ln,plot=pt)
 
 
 
 if __name__ == "__main__":
-    forceANA('515880',zo=600,ty = 'SMB', cg = 'index', st = 10, mi = 20, ln = 30)
+    forceANA('515880',zo=600,ty = 'SMB', cg = 'index', st = 10, mi = 20, ln = 30, pt='E')
 
 
