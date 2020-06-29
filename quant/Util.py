@@ -1355,29 +1355,33 @@ def PlotBySe(day, period=26):
 
     plt.show()
 
-def TrendFinder(sample,short=5,mid=10,long=30):
-    sample['ES'] = QA.EMA(sample.close,short)
-    sample['EM']= QA.EMA(sample.close,mid)
-    sample['EL'] = QA.EMA(sample.close, long)
-    sample['CE'] = sample.close/sample.ES
-    sample['SM'] = sample.ES/sample.EM
-    sample['ML'] = sample.EM/sample.EL
+def TrendFinder(day,short=20,mid=30,long=60):
+    #20, 30 , 60   8/10
+    #10, 20, 60   6.7/10
+    #10, 30, 60   7.2/10
+    day['long'] = QA.EMA(day.close, long)
+    day['mid'] = QA.EMA(day.close, mid)
+    day['short'] = QA.EMA(day.close, short)
+    day['BIAS'] = (day.close - day.long) * 100 / day.long
+    day['CS'] = (day.close - day.short) * 100 / day.short
+    day['SM'] = (day.short - day.mid) * 100 / day.mid
+    day['ML'] = (day.mid - day.long) * 100 / day.long
     sig = []
     buy = 0
     sell = 0
-    for i in range(sample.shape[0]):
-        if(sample.CE[i]>1 and sample.SM[i]>1 and sample.ML[i]>1 and buy ==0):
+    for i in range(day.shape[0]):
+        if(day.CS[i]>1 and day.SM[i]>1  and buy ==0):
             sig.append(1)
             buy = 1
             sell = 0
-        elif(sample.CE[i]<1 and sample.SM[i]<1 and sample.ML[i]<1 and sell==0):
+        elif(day.CS[i]<1 and day.SM[i]<1  and sell==0):
             sig.append(3)
             sell = 1
             buy = 0
         else:
             sig.append(0)
-    sample['single'] = sig
-    return sample
+    day['single'] = sig
+    return day
 
 
 def EMA_MA(sample,period=20):
@@ -1727,7 +1731,7 @@ def backtestv2():
     clist3.extend(clist1)
 
     # codelist1.extend(codelist4)
-    codelist = list(set(codelist2))
+
 
 
     cur = datetime.datetime.now()
@@ -1737,8 +1741,10 @@ def backtestv2():
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
+    codelist2.extend(cl)
+    codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    data = loadLocalData(cl, '2019-01-01', endtime)
+    data = loadLocalData(codelist, '2019-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
