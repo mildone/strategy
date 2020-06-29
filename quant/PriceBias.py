@@ -169,11 +169,17 @@ def forceANA(code,zo=100,ty = 'SMLB',cg = 'stock', st = 20, mi = 60, ln = 120,pt
     elif(cg == 'index'):
         start = '2019-10-01'
         dd = QA.QA_fetch_index_day_adv(code, start, et).data
+        '''
+        dd = QA.QAFetch.QATdx.QA_fetch_get_index_day('515880', '2019-10-10', '2020-06-28')
+        dd.set_index(['date', 'code'], inplace=True)
+        dd.drop(['date_stamp'], axis=1, inplace=True)
+        dd.rename(columns={'vol': 'volume'}, inplace=True)
+        '''
         PriceBias(dd, type=ty, zoom=zo, short = st, mid = mi, long = ln,plot=pt)
 
 
 
 if __name__ == "__main__":
-    forceANA('515880',zo=600,ty = 'SMB', cg = 'index', st = 10, mi = 20, ln = 30, pt='E')
+    forceANA('515880',zo=600,ty = 'SMB', cg = 'index', st = 20, mi = 30, ln = 60, pt='M')
 
 
