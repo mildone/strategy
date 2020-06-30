@@ -1380,8 +1380,13 @@ def TrendFinder(day,short=20,mid=30,long=60):
             buy = 0
         else:
             sig.append(0)
-    day['single'] = sig
+    #day['single'] = sig
+    day['single'] = [0]+sig[:-1]
+
+
     return day
+
+
 
 
 def EMA_MA(sample,period=20):

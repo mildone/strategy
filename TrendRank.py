@@ -133,7 +133,7 @@ def plot(day, short=20, mid=60, long=120):
 
 if __name__ == "__main__":
     res = TrendRank(start = '2015-01-01')
-    res = res.sort_values(by='CS')
+    res = res.sort_values(by=['date','CS','SM'],axis=0,ascending=[True,True,True])
     print(res[-20:])
 
 
