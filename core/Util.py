@@ -44,10 +44,11 @@ def percSet(pw, rw, rl):
 
 def candlestruct(sample):
     quotes = []
-    pydate_array = sample.index.get_level_values(dayindex).to_pydatetime()
-    date_only_array = np.vectorize(lambda s: s.strftime(dayformate))(pydate_array)
+    #pydate_array = sample.index.get_level_values(index).to_pydatetime()
+    #date_only_array = np.vectorize(lambda s: s.strftime(timeFrmate))(pydate_array)
     # date_only_series = pd.Series(date_only_array)
-    N = sample.index.get_level_values(dayindex).shape[0]
+    #N = sample.index.get_level_values(index).shape[0]
+    N = sample.shape[0]
     ind = np.arange(N)
     for i in range(len(sample)):
         li = []
@@ -133,7 +134,7 @@ def divergence( day,short = 20, mid = 60, long = 120):
     return day
 
 
-def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'):
+def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML',numofax = 3):
     """
     value of Type:
     * E or A  at least 1, E means EMA, A means MA
@@ -142,7 +143,7 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
     ASL will plot short MA, long MA
 
     """
-    import quant.MACD as macd
+
     divergence(day,short,mid,long)
 
 
@@ -158,113 +159,187 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
 
     def format_date(x, pos=None):
         thisind = np.clip(int(x + 0.5), 0, N - 1)
-        return day.index.get_level_values(dayindex)[thisind].strftime(dayformate)
+        return day.index.get_level_values(dayindex)[thisind]
 
-    fig = plt.figure()
-    fig.set_size_inches(40.5, 20.5)
+    if(numofax==1):
+        fig = plt.figure()
+        fig.set_size_inches(30.5, 20.5)
+        ax2 = fig.add_subplot(1, 1, 1)
+        ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
 
-    ax3 = fig.add_subplot(3, 1, 1)
-    ax3.bar(ind, day.BIAS, color='blue')
-    ax3.plot(ind, day.CS, 'r-', label='CS',linewidth = 1)
-    ax3.plot(ind, day.SM, 'blue', label='SM',linewidth = 1)
-    ax3.plot(ind, day.ML, color='green',label='ML',linewidth=1)
-    ax3.bar(ind,day.BIAS, color = 'grey',label='BIAS')
+        mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
+        if ('EA' in type):
+            # both EMA and MA are required
+            if ('S' in plot):
+                ax2.plot(ind, day.sh, 'purple', label='MA' + str(short), linewidth=0.7)
+                ax2.plot(ind, day.short, 'purple', label='EMA' + str(short), linewidth=0.7, ls='--')
+            if ('M' in plot):
+                ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid), linewidth=0.7)
+                ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid), linewidth=0.7, ls='--')
+            if ('L' in plot):
+                ax2.plot(ind, day.lo, 'r-', label='MA' + str(long), linewidth=0.7)
+                ax2.plot(ind, day.long, 'r-', label='EMA' + str(long), linewidth=0.7, ls='--')
 
-    ax3.grid(True)
-    ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
-    ax3.legend()
-    fig.autofmt_xdate()
+        else:
+            # Only EMA Or MA is required
+            if ('S' in plot and 'E' in type):
+                ax2.plot(ind, day.short, 'purple', label='EMA' + str(short), linewidth=0.7, ls='--')
+            if ('S' in plot and 'A' in type):
+                ax2.plot(ind, day.sh, 'purple', label='MA' + str(short), linewidth=0.7)
+
+            if ('M' in plot and 'E' in type):
+                ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid), linewidth=0.7, ls='--')
+            if ('M' in plot and 'A' in type):
+                ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid), linewidth=0.7)
+            if ('L' in plot and 'E' in type):
+                ax2.plot(ind, day.long, 'r-', label='EMA' + str(long), linewidth=0.7, ls='--')
+            if ('L' in plot and 'A' in type):
+                ax2.plot(ind, day.lo, 'r-', label='MA' + str(long), linewidth=0.7)
+
+        # plot SML Position for later simulation
+        ratio = day.low.median() * 0.03
+
+        ax2.text(N - short, day.high[N - short] + ratio,
+                 str(day.close[N - short]),
+                 fontdict={'size': '12', 'color': 'b'})
+        ax2.text(N - mid, day.high[N - mid] + ratio,
+                 str(day.close[N - mid]),
+                 fontdict={'size': '12', 'color': 'b'})
+        ax2.text(N - long, day.high[N - long] + ratio,
+                 str(day.close[N - long]),
+                 fontdict={'size': '12', 'color': 'b'})
+        ax2.text(N - 1, day.high[-1] + ratio,
+                 str(day.close[-1]),
+                 fontdict={'size': '12', 'color': 'b'})
+        ax2.plot(N - short, day.low[N - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+                 markeredgecolor='purple')
+        # ax2.axvline(x=N-short,ls='--',color='purple')
+        ax2.plot(N - mid, day.low[N - mid] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+                 markeredgecolor='blue')
+        ax2.plot(N - long, day.low[N - long] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+                 markeredgecolor='red')
+
+        # ax2.plot(100, 30, 'go', markersize=12, markeredgewidth=0.5,
+        # markerfacecolor='None', markeredgecolor='green')
+        # plot jump position
+        for i in range(N):
+            if (day.jump[i] == 1):
+                ax2.plot(i, day.low[i], 'ro', markersize=12, markeredgewidth=2, markerfacecolor='None',
+                         markeredgecolor='red')
+            if (day.jump[i] == -1):
+                ax2.plot(i, day.high[i], 'go', markersize=12, markeredgewidth=2, markerfacecolor='None',
+                         markeredgecolor='green')
+
+        ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+        ax2.grid(True)
+        ax2.legend(loc='best')
+        fig.autofmt_xdate()
+
+        plt.show()
+    elif(numofax==3):
+        fig = plt.figure()
+        fig.set_size_inches(40.5, 20.5)
+
+        ax3 = fig.add_subplot(3, 1, 1)
+        ax3.bar(ind, day.BIAS, color='blue')
+        ax3.plot(ind, day.CS, 'r-', label='CS', linewidth=1)
+        ax3.plot(ind, day.SM, 'blue', label='SM', linewidth=1)
+        ax3.plot(ind, day.ML, color='green', label='ML', linewidth=1)
+        ax3.bar(ind, day.BIAS, color='grey', label='BIAS')
+
+        ax3.grid(True)
+        ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+        ax3.legend()
+        fig.autofmt_xdate()
+
+        ax1 = fig.add_subplot(3, 1, 3, sharex=ax3)
+        bar_red = np.where(day.close > day.open, day.volume, 0)
+        bar_green = np.where(day.close < day.open, day.volume, 0)
+        ax1.bar(ind, bar_red, color='red')
+        ax1.bar(ind, bar_green, color='green')
+        # ax3.plot(ind,day.vma,'orange',label='volume EMA20')
+        ax1.axhline(y=day.volume.median(), ls='--', color='grey')
+        # x3.bar(ind,day.BIAS,color='blue')
+        # ax3.axhline(y=0,ls='--',color='yellow')
+        ax1.grid(True)
+        ax1.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+        ax1.legend()
+        fig.autofmt_xdate()
+
+        ax2 = fig.add_subplot(3, 1, 2, sharex=ax3)
+        ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
+
+        mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
+        if ('EA' in type):
+            # both EMA and MA are required
+            if ('S' in plot):
+                ax2.plot(ind, day.sh, 'purple', label='MA' + str(short), linewidth=0.7)
+                ax2.plot(ind, day.short, 'purple', label='EMA' + str(short), linewidth=0.7, ls='--')
+            if ('M' in plot):
+                ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid), linewidth=0.7)
+                ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid), linewidth=0.7, ls='--')
+            if ('L' in plot):
+                ax2.plot(ind, day.lo, 'r-', label='MA' + str(long), linewidth=0.7)
+                ax2.plot(ind, day.long, 'r-', label='EMA' + str(long), linewidth=0.7, ls='--')
+
+        else:
+            # Only EMA Or MA is required
+            if ('S' in plot and 'E' in type):
+                ax2.plot(ind, day.short, 'purple', label='EMA' + str(short), linewidth=0.7, ls='--')
+            if ('S' in plot and 'A' in type):
+                ax2.plot(ind, day.sh, 'purple', label='MA' + str(short), linewidth=0.7)
+
+            if ('M' in plot and 'E' in type):
+                ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid), linewidth=0.7, ls='--')
+            if ('M' in plot and 'A' in type):
+                ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid), linewidth=0.7)
+            if ('L' in plot and 'E' in type):
+                ax2.plot(ind, day.long, 'r-', label='EMA' + str(long), linewidth=0.7, ls='--')
+            if ('L' in plot and 'A' in type):
+                ax2.plot(ind, day.lo, 'r-', label='MA' + str(long), linewidth=0.7)
+
+        # plot SML Position for later simulation
+        ratio = day.low.median() * 0.03
+
+        ax2.text(N - short, day.high[N - short] + ratio,
+                 str(day.close[N - short]),
+                 fontdict={'size': '12', 'color': 'b'})
+        ax2.text(N - mid, day.high[N - mid] + ratio,
+                 str(day.close[N - mid]),
+                 fontdict={'size': '12', 'color': 'b'})
+        ax2.text(N - long, day.high[N - long] + ratio,
+                 str(day.close[N - long]),
+                 fontdict={'size': '12', 'color': 'b'})
+        ax2.text(N - 1, day.high[-1] + ratio,
+                 str(day.close[-1]),
+                 fontdict={'size': '12', 'color': 'b'})
+        ax2.plot(N - short, day.low[N - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+                 markeredgecolor='purple')
+        # ax2.axvline(x=N-short,ls='--',color='purple')
+        ax2.plot(N - mid, day.low[N - mid] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+                 markeredgecolor='blue')
+        ax2.plot(N - long, day.low[N - long] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+                 markeredgecolor='red')
+
+        # ax2.plot(100, 30, 'go', markersize=12, markeredgewidth=0.5,
+        # markerfacecolor='None', markeredgecolor='green')
+        # plot jump position
+        for i in range(N):
+            if (day.jump[i] == 1):
+                ax2.plot(i, day.low[i], 'ro', markersize=12, markeredgewidth=2, markerfacecolor='None',
+                         markeredgecolor='red')
+            if (day.jump[i] == -1):
+                ax2.plot(i, day.high[i], 'go', markersize=12, markeredgewidth=2, markerfacecolor='None',
+                         markeredgecolor='green')
+
+        ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+        ax2.grid(True)
+        ax2.legend(loc='best')
+        fig.autofmt_xdate()
+
+        plt.show()
 
 
-
-    ax1 = fig.add_subplot(3, 1, 3, sharex = ax3)
-    bar_red = np.where(day.close > day.open, day.volume, 0)
-    bar_green = np.where(day.close < day.open, day.volume, 0)
-    ax1.bar(ind, bar_red, color='red')
-    ax1.bar(ind, bar_green, color='green')
-    #ax3.plot(ind,day.vma,'orange',label='volume EMA20')
-    ax1.axhline(y=day.volume.median(),ls='--',color='grey')
-    # x3.bar(ind,day.BIAS,color='blue')
-    # ax3.axhline(y=0,ls='--',color='yellow')
-    ax1.grid(True)
-    ax1.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
-    ax1.legend()
-    fig.autofmt_xdate()
-
-
-    ax2 = fig.add_subplot(3, 1, 2, sharex=ax3)
-    ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
-
-    mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
-    if ('EA' in type):
-        #both EMA and MA are required
-        if('S' in plot):
-            ax2.plot(ind, day.sh, 'purple', label='MA' + str(short), linewidth=0.7)
-            ax2.plot(ind, day.short, 'purple', label='EMA' + str(short), linewidth=0.7,ls='--')
-        if('M' in plot):
-            ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid), linewidth=0.7)
-            ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid), linewidth=0.7,ls='--')
-        if('L' in plot):
-            ax2.plot(ind, day.lo, 'r-', label='MA' + str(long), linewidth=0.7)
-            ax2.plot(ind, day.long, 'r-', label='EMA' + str(long), linewidth=0.7,ls='--')
-
-    else:
-        #Only EMA Or MA is required
-        if ('S' in plot and 'E' in type):
-            ax2.plot(ind, day.short, 'purple', label='EMA' + str(short), linewidth=0.7, ls='--')
-        if('S' in plot and 'A' in type):
-            ax2.plot(ind, day.sh, 'purple', label='MA' + str(short), linewidth=0.7)
-
-
-        if ('M' in plot and 'E' in type):
-
-            ax2.plot(ind, day.mid, 'blue', label='EMA' + str(mid), linewidth=0.7, ls='--')
-        if('M' in plot and 'A' in type):
-            ax2.plot(ind, day.mi, 'blue', label='MA' + str(mid), linewidth=0.7)
-        if ('L' in plot and 'E' in type):
-            ax2.plot(ind, day.long, 'r-', label='EMA' + str(long), linewidth=0.7, ls='--')
-        if('L' in plot and 'A' in type):
-            ax2.plot(ind, day.lo, 'r-', label='MA' + str(long), linewidth=0.7)
-
-    #plot SML Position for later simulation
-    ratio = day.low.median() * 0.03
-
-    ax2.text(N - short, day.high[N-short]+ratio,
-             str(day.close[N-short]),
-             fontdict={'size': '12', 'color': 'b'})
-    ax2.text(N - mid, day.high[N-mid]+ratio,
-             str(day.close[N-mid]),
-             fontdict={'size': '12', 'color': 'b'})
-    ax2.text(N - long, day.high[N-long]+ratio,
-             str(day.close[N-long]),
-             fontdict={'size': '12', 'color': 'b'})
-    ax2.plot(N - short, day.low[N - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
-             markeredgecolor='purple')
-    # ax2.axvline(x=N-short,ls='--',color='purple')
-    ax2.plot(N - mid, day.low[N - mid] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
-             markeredgecolor='blue')
-    ax2.plot(N - long, day.low[N - long] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
-             markeredgecolor='red')
-
-    # ax2.plot(100, 30, 'go', markersize=12, markeredgewidth=0.5,
-    # markerfacecolor='None', markeredgecolor='green')
-    # plot jump position
-    for i in range(N):
-        if (day.jump[i] == 1):
-            ax2.plot(i, day.low[i], 'ro', markersize=12, markeredgewidth=2, markerfacecolor='None',
-                     markeredgecolor='red')
-        if (day.jump[i] == -1):
-            ax2.plot(i, day.high[i], 'go', markersize=12, markeredgewidth=2, markerfacecolor='None',
-                     markeredgecolor='green')
-
-    ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
-    ax2.grid(True)
-    ax2.legend(loc='best')
-    fig.autofmt_xdate()
-
-
-
-    plt.show()
 
 
 
@@ -273,7 +348,7 @@ def getWeekDate(daytime):
     # return Timestamp('2020-05-11 00:00:00')
     return daytime + dateutil.relativedelta.relativedelta(days=(6 - daytime.dayofweek))
 
-def prepareData(code,start='2019-01-01',cg='stock'):
+def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
     cur = datetime.datetime.now()
     mon = str(cur.month)
     day = str(cur.day)
@@ -283,21 +358,38 @@ def prepareData(code,start='2019-01-01',cg='stock'):
         day = '0' + day
 
     et = str(cur.year) + '-' + mon + '-' + day
+    print(et)
     if(cg == 'stock'):
         start = '2010-01-01'
-        dd = QA.QA_fetch_stock_day_adv(code,start,et).data
+        #sample = QA.QA_fetch_stock_day_adv(code, start, et).data
+        sample = QA.QA_fetch_stock_day_adv(code, start, et).data
+        td = QA.QAFetch.QATdx.QA_fetch_get_stock_day('000977','2020-07-01','2020-07-01',if_fq='bfq')
+        td.set_index(['date','code'],inplace=True)
+        td.drop(['date_stamp'], axis=1, inplace=True)
+        td.rename(columns={'vol': 'volume'}, inplace=True)
+        sample = pd.concat([td, sample], axis=0,sort=True)
+        sample.sort_index(inplace=True,level='date')
     elif(cg == 'index'):
         start = '2019-10-01'
-        dd = QA.QA_fetch_index_day_adv(code, start, et).data
-    return dd
+        sample = QA.QA_fetch_index_day_adv(code, start, et).data
+        '''
+        sample = QA.QA_fetch_index_day_adv(code, start, et).data
+        td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,et,et,if_fq='bfq')
+        td.set_index(['date','code'],inplace=True)
+        td.drop(['date_stamp'], axis=1, inplace=True)
+        td.rename(columns={'vol': 'volume'}, inplace=True)
+        sample = pd.concat([td, sample], axis=0,sort=True)
+        dd = sample.sort_index(inplace=True,level='date')
+        '''
+    return sample
 
 
-def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt='SM'):
+def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt='SM',nm=3):
     dd = prepareData(code,cg='stock')
-    PlotBySe(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln,plot=pt)
+    PlotBySe(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln,plot=pt,numofax=nm)
 
 
 
 if __name__ == "__main__":
-    forceANA('000977',zo=600,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SM')
+    forceANA('000977',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='M',nm=3)
 
