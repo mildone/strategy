@@ -161,9 +161,9 @@ def weekPlot(sample, short=20, mid=60, long=120):
     fig.autofmt_xdate()
     '''
     plt.legend()
-    plt.savefig(r'week1.png')
-    plt.close()
-    #plt.show()
+    #plt.savefig(r'week1.png')
+    #plt.close()
+    plt.show()
 
 
 
@@ -198,4 +198,4 @@ def weekDFANA(code,start='2018-01-01',end='current'):
 
 
 if __name__ == "__main__":
-    weekDFANA('000810')
+    weekDFANA('000977')

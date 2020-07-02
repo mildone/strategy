@@ -31,9 +31,11 @@ def wds(df,duration='W'):
 
 
 def divergence(wk, short=10, mid=20, long=30):
-    wk['lo'] = pd.Series.rolling(wk.close, long).mean()
-    wk['mi'] = pd.Series.rolling(wk.close, mid).mean()
-    wk['sh'] = pd.Series.rolling(wk.close, short).mean()
+    #wk['lo'] = wk.close.rolling(window=long).mean()
+    wk['lo'] = QA.MA(wk.close,long)
+    wk['mi'] = wk.close.rolling(window=mid).mean()
+    wk['sh'] = wk.close.rolling(window=short).mean()
+
 
     wk['short'] = pd.Series.ewm(wk.close, span=short, min_periods=short - 1, adjust=True).mean()
     wk['mid'] = pd.Series.ewm(wk.close, span=mid, min_periods=mid - 1, adjust=True).mean()

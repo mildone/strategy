@@ -180,6 +180,6 @@ def forceANA(code,zo=100,ty = 'SMLB',cg = 'stock', st = 20, mi = 60, ln = 120,pt
 
 
 if __name__ == "__main__":
-    forceANA('000977',zo=600,ty = 'SMB', cg = 'stock', st = 20, mi = 60, ln = 120, pt='E')
+    forceANA('515880',zo=300,ty = 'SMB', cg = 'index', st = 20, mi = 30, ln = 60, pt='M')
 
 
