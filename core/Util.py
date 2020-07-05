@@ -210,7 +210,10 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
                  fontdict={'size': '12', 'color': 'b'})
         ax2.text(N - 1, day.high[-1] + ratio,
                  str(day.close[-1]),
-                 fontdict={'size': '12', 'color': 'b'})
+                 fontdict={'size': '8', 'color': 'b'})
+        ax2.text(N - 1, day.high[-1] + 3*ratio,
+                 str(day.long[-1]),
+                 fontdict={'size': '8', 'color': 'b'})
         ax2.plot(N - short, day.low[N - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
                  markeredgecolor='purple')
         # ax2.axvline(x=N-short,ls='--',color='purple')
@@ -229,6 +232,10 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
             if (day.jump[i] == -1):
                 ax2.plot(i, day.high[i], 'go', markersize=12, markeredgewidth=2, markerfacecolor='None',
                          markeredgecolor='green')
+            if(day.single[i] is not None and day.single[i]==1):
+                ax2.axvline(x=i,ls='--',color='red')
+            if (day.single[i] is not None and day.single[i] == 3):
+                ax2.axvline(x=i, ls='--', color='green')
 
         ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
         ax2.grid(True)
@@ -312,7 +319,10 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
                  fontdict={'size': '12', 'color': 'b'})
         ax2.text(N - 1, day.high[-1] + ratio,
                  str(day.close[-1]),
-                 fontdict={'size': '12', 'color': 'b'})
+                 fontdict={'size': '8', 'color': 'b'})
+        ax2.text(N - 1, day.high[-1] + 3*ratio,
+                 str(day.long[-1]),
+                 fontdict={'size': '8', 'color': 'b'})
         ax2.plot(N - short, day.low[N - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
                  markeredgecolor='purple')
         # ax2.axvline(x=N-short,ls='--',color='purple')
@@ -363,7 +373,8 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
         start = '2010-01-01'
         #sample = QA.QA_fetch_stock_day_adv(code, start, et).data
         sample = QA.QA_fetch_stock_day_adv(code, start, et).data
-        td = QA.QAFetch.QATdx.QA_fetch_get_stock_day('000977','2020-07-01','2020-07-01',if_fq='bfq')
+        nstart = (sample.index.get_level_values(dayindex)[-1]+dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
+        td = QA.QAFetch.QATdx.QA_fetch_get_stock_day('000977',nstart,et,if_fq='bfq')
         td.set_index(['date','code'],inplace=True)
         td.drop(['date_stamp'], axis=1, inplace=True)
         td.rename(columns={'vol': 'volume'}, inplace=True)
@@ -371,25 +382,26 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
         sample.sort_index(inplace=True,level='date')
     elif(cg == 'index'):
         start = '2019-10-01'
+        #sample = QA.QA_fetch_index_day_adv(code, start, et).data
+
         sample = QA.QA_fetch_index_day_adv(code, start, et).data
-        '''
-        sample = QA.QA_fetch_index_day_adv(code, start, et).data
-        td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,et,et,if_fq='bfq')
+        nstart = (sample.index.get_level_values(dayindex)[-1] + dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
+        td = QA.QAFetch.QATdx.QA_fetch_get_index_day(code,nstart,et)
         td.set_index(['date','code'],inplace=True)
         td.drop(['date_stamp'], axis=1, inplace=True)
         td.rename(columns={'vol': 'volume'}, inplace=True)
         sample = pd.concat([td, sample], axis=0,sort=True)
         dd = sample.sort_index(inplace=True,level='date')
-        '''
+
     return sample
 
 
 def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt='SM',nm=3):
-    dd = prepareData(code,cg='stock')
+    dd = prepareData(code,cg=cg)
     PlotBySe(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln,plot=pt,numofax=nm)
 
 
 
 if __name__ == "__main__":
-    forceANA('000977',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='M',nm=3)
+    forceANA('515880',zo=300,ty = 'A', cg = 'index', st = 20, mi = 60, ln = 120, pt='SML',nm=3)
 

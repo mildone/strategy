@@ -1370,18 +1370,18 @@ def TrendFinder(day,short=20,mid=30,long=60):
     buy = 0
     sell = 0
     for i in range(day.shape[0]):
-        if(day.CS[i]>1 and day.SM[i]>1  and buy ==0):
+        if(day.CS[i]>0 and day.SM[i]>0 and day.ML[i]>0 and buy ==0):
             sig.append(1)
             buy = 1
             sell = 0
-        elif(day.CS[i]<1 and day.SM[i]<1  and sell==0):
+        elif(day.CS[i]<0 and day.SM[i]<0  and sell==0):
             sig.append(3)
             sell = 1
             buy = 0
         else:
             sig.append(0)
-    #day['single'] = sig
-    day['single'] = [0]+sig[:-1]
+    day['single'] = sig
+   # day['single'] = [0]+sig[:-1]
 
 
     return day

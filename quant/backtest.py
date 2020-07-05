@@ -19,6 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtk
 import mpl_finance as mpf
+import pattern.TrendFin as tf
 
 class backtest(object):
     def __init__(self):
@@ -66,7 +67,7 @@ class backtest(object):
               '000333', '600031', '002384', '002241', '600703', '000776', '600897', '600085']
         codelist2.extend(cl)
         codelist = list(set(codelist2))
-        data = uti.loadLocalData(cl, '2019-01-01', endtime)
+        data = uti.loadLocalData(cl, '2015-01-01', endtime)
         #data = uti.loadLocalData(codelist, '2019-01-01', endtime)
         data = data.to_qfq()
         print('*' * 100)
@@ -91,7 +92,8 @@ class backtest(object):
         # ind = data.add_func(EMA_MA)
 
         # 6/10
-        ind = data.add_func(uti.TrendFinder)
+        ind = data.add_func(tf.TrendFinder)
+        #ind = data.add_func(tf.TrendFinM)
 
         # ind = data.add_func(bollStrategy)
         # ind = data.add_func(nineTurn)
@@ -99,7 +101,7 @@ class backtest(object):
         # ind = data.add_func(EMAOP)
         # cur = datetime.datetime.now()
         # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
-        data_forbacktest = data.select_time('2019-01-01', endtime)
+        data_forbacktest = data.select_time('2015-01-01', endtime)
         deal = {}
         for items in data_forbacktest.panel_gen:
             for item in items.security_gen:
