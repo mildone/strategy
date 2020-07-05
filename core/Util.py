@@ -9,16 +9,10 @@ try:
 except AssertionError:
     print('pip install QUANTAXIS >= 1.1.0 请升级QUANTAXIS后再运行此示例')
     import QUANTAXIS as QA
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import abupy
 from abupy import ABuRegUtil
-from concurrent.futures import ThreadPoolExecutor
-from functools import reduce
-import warnings
-import re
 
+import re
+from matplotlib import gridspec
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -246,8 +240,10 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
     elif(numofax==3):
         fig = plt.figure()
         fig.set_size_inches(40.5, 20.5)
+        gs = gridspec.GridSpec(7, 1)
 
-        ax3 = fig.add_subplot(3, 1, 1)
+        ax3 = fig.add_subplot(gs[0:1, 0:1])
+        #ax3.set_title("Divergence", fontsize='xx-large', fontweight='bold')
         ax3.bar(ind, day.BIAS, color='blue')
         ax3.plot(ind, day.CS, 'r-', label='CS', linewidth=1)
         ax3.plot(ind, day.SM, 'blue', label='SM', linewidth=1)
@@ -259,7 +255,8 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         ax3.legend()
         fig.autofmt_xdate()
 
-        ax1 = fig.add_subplot(3, 1, 3, sharex=ax3)
+        ax1 = fig.add_subplot(gs[6:7, 0:1], sharex=ax3)
+        #ax1.set_title("volume", fontsize='xx-large', fontweight='bold')
         bar_red = np.where(day.close > day.open, day.volume, 0)
         bar_green = np.where(day.close < day.open, day.volume, 0)
         ax1.bar(ind, bar_red, color='red')
@@ -273,8 +270,8 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         ax1.legend()
         fig.autofmt_xdate()
 
-        ax2 = fig.add_subplot(3, 1, 2, sharex=ax3)
-        ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
+        ax2 = fig.add_subplot(gs[1:6, 0:1], sharex=ax3)
+        #ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
 
         mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
         if ('EA' in type):
@@ -341,6 +338,10 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
             if (day.jump[i] == -1):
                 ax2.plot(i, day.high[i], 'go', markersize=12, markeredgewidth=2, markerfacecolor='None',
                          markeredgecolor='green')
+            if (day.single[i] is not None and day.single[i] == 1):
+                ax2.axvline(x=i, ls='--', color='red')
+            if (day.single[i] is not None and day.single[i] == 3):
+                ax2.axvline(x=i, ls='--', color='green')
 
         ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
         ax2.grid(True)
@@ -403,5 +404,5 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 
 
 if __name__ == "__main__":
-    forceANA('515880',zo=300,ty = 'A', cg = 'index', st = 20, mi = 60, ln = 120, pt='SML',nm=3)
+    forceANA('515050',zo=300,ty = 'A', cg = 'index', st = 20, mi = 60, ln = 120, pt='SML',nm=3)
 

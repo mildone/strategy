@@ -7,7 +7,7 @@ try:
 except AssertionError:
     print('pip install QUANTAXIS >= 1.1.0 请升级QUANTAXIS后再运行此示例')
     import QUANTAXIS as QA
-
+import core.Util as uti
 def TrendFinder(day,short=20,mid=60,long=120):
     #20, 30 , 60   5.3/10
     # 20, 60, 120 5.0/10
@@ -24,7 +24,7 @@ def TrendFinder(day,short=20,mid=60,long=120):
     buy = 0
     sell = 0
     for i in range(day.shape[0]):
-        if(day.CS[i]>0 and day.SM[i]>0 and day.ML[i]>0 and buy ==0):
+        if(day.CS[i]>0 and day.SM[i]>0  and buy ==0):
             sig.append(1)
             buy = 1
             sell = 0
@@ -74,7 +74,9 @@ def TrendFinM(day,short=20,mid=60,long=120):
 
 
 if __name__ == "__main__":
-    pass
+    test = QA.QA_fetch_stock_day_adv('000977','2019-01-01','2020-07-03').data
+    TrendFinder(test)
+    uti.PlotBySe(test,zoom = 400,numofax=3)
 
 
 
