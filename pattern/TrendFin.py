@@ -28,7 +28,7 @@ def TrendFinder(day,short=20,mid=60,long=120):
             sig.append(1)
             buy = 1
             sell = 0
-        elif(day.CS[i]<0 and day.SM[i]<0  and sell==0):
+        elif(day.CS[i]<0   and sell==0):
             sig.append(3)
             sell = 1
             buy = 0
@@ -40,6 +40,11 @@ def TrendFinder(day,short=20,mid=60,long=120):
 
     return day
 
+def TurnNotice(sample):
+    '''
+    alerting trend changing based on data
+    '''
+    return None
 
 def TrendFinM(day,short=20,mid=60,long=120):
     #20, 30 , 60   8/10
@@ -60,7 +65,7 @@ def TrendFinM(day,short=20,mid=60,long=120):
             sig.append(1)
             buy = 1
             sell = 0
-        elif(day.CS[i]<0 and day.SM[i]<0  and sell==0):
+        elif(day.CS[i]<0  and sell==0):
             sig.append(3)
             sell = 1
             buy = 0

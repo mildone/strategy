@@ -98,6 +98,14 @@ def change_jump(df):
             jump.append(0)
     df['jump'] = jump
     return df
+def change(dd):
+    from functools import reduce
+    pp_array = [float(close) for close in dd]
+    temp_array = [(price1, price2) for price1, price2 in zip(pp_array[:-1], pp_array[1:])]
+    change = list(map(lambda pp: reduce(lambda a, b: round((b - a) / a, 3), pp), temp_array))
+    change.insert(0, 0)
+    return change
+
 
 def divergence( day,short = 20, mid = 60, long = 120):
     # change first (d[i].close-d[i-1].close)/d[i-1].close
@@ -125,10 +133,14 @@ def divergence( day,short = 20, mid = 60, long = 120):
     day['CS'] = (day.close - day.short) * 100 / day.short
     day['SM'] = (day.short - day.mid) * 100 / day.mid
     day['ML'] = (day.mid - day.long) * 100 / day.long
+    #Short MA and Mid MA
+    day['SMAcc'] = change(day.SM)
+    #Mid and Long MA
+    day['MLAcc'] = change(day.ML)
     return day
 
 
-def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML',numofax = 3):
+def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML',numofax = 3, mark = False):
     """
     value of Type:
     * E or A  at least 1, E means EMA, A means MA
@@ -157,8 +169,9 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
 
     if(numofax==1):
         fig = plt.figure()
+        gs = gridspec.GridSpec(3, 1)
         fig.set_size_inches(30.5, 20.5)
-        ax2 = fig.add_subplot(1, 1, 1)
+        ax2 = fig.add_subplot(gs[1:3,0:1])
         ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
 
         mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
@@ -202,6 +215,11 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         ax2.text(N - long, day.high[N - long] + ratio,
                  str(day.close[N - long]),
                  fontdict={'size': '12', 'color': 'b'})
+        if(mark):
+            ax2.axhline(y=day.close[N-long],ls='--',color='red')
+            ax2.axhline(y=day.close[N-mid],ls='--',color='blue')
+            ax2.axhline(y=day.close[N - short], ls='--', color='purple')
+
         ax2.text(N - 1, day.high[-1] + ratio,
                  str(day.close[-1]),
                  fontdict={'size': '8', 'color': 'b'})
@@ -226,14 +244,27 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
             if (day.jump[i] == -1):
                 ax2.plot(i, day.high[i], 'go', markersize=12, markeredgewidth=2, markerfacecolor='None',
                          markeredgecolor='green')
-            if(day.single[i] is not None and day.single[i]==1):
-                ax2.axvline(x=i,ls='--',color='red')
-            if (day.single[i] is not None and day.single[i] == 3):
-                ax2.axvline(x=i, ls='--', color='green')
+
+        if('single' in list(day.columns)):
+            for i in range(N):
+                if (day.single[i] == 1):
+                    ax2.axvline(x=i, ls='--', color='red')
+                if (day.single[i] == 3):
+                    ax2.axvline(x=i, ls='--', color='green')
 
         ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
         ax2.grid(True)
         ax2.legend(loc='best')
+        fig.autofmt_xdate()
+
+        ax3 = fig.add_subplot(gs[0:1, 0:1])
+        # ax3.set_title("Divergence", fontsize='xx-large', fontweight='bold')
+        ax3.plot(ind, day.SMAcc, 'r-', label='SM Acceleration', linewidth=1)
+        ax3.plot(ind, day.MLAcc, 'blue', label='ML Acceleration', linewidth=1)
+        ax3.axhline(y=0,color='white')
+        ax3.grid(True)
+        ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+        ax3.legend()
         fig.autofmt_xdate()
 
         plt.show()
@@ -320,6 +351,11 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         ax2.text(N - 1, day.high[-1] + 3*ratio,
                  str(day.long[-1]),
                  fontdict={'size': '8', 'color': 'b'})
+        if(mark):
+            ax2.axhline(y=day.close[N - long], ls='--', color='red')
+            ax2.axhline(y=day.close[N - mid], ls='--', color='blue')
+            ax2.axhline(y=day.close[N - short], ls='--', color='purple')
+
         ax2.plot(N - short, day.low[N - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
                  markeredgecolor='purple')
         # ax2.axvline(x=N-short,ls='--',color='purple')
@@ -338,11 +374,12 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
             if (day.jump[i] == -1):
                 ax2.plot(i, day.high[i], 'go', markersize=12, markeredgewidth=2, markerfacecolor='None',
                          markeredgecolor='green')
-            if (day.single[i] is not None and day.single[i] == 1):
-                ax2.axvline(x=i, ls='--', color='red')
-            if (day.single[i] is not None and day.single[i] == 3):
-                ax2.axvline(x=i, ls='--', color='green')
-
+        if ('single' in list(day.columns)):
+            for i in range(N):
+                if (day.single[i] == 1):
+                    ax2.axvline(x=i, ls='--', color='red')
+                if (day.single[i] == 3):
+                    ax2.axvline(x=i, ls='--', color='green')
         ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
         ax2.grid(True)
         ax2.legend(loc='best')
@@ -369,18 +406,21 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
         day = '0' + day
 
     et = str(cur.year) + '-' + mon + '-' + day
+    #et = '2020-07-01'
     print(et)
     if(cg == 'stock'):
         start = '2010-01-01'
-        #sample = QA.QA_fetch_stock_day_adv(code, start, et).data
+        sample = QA.QA_fetch_stock_day_adv(code, start, et).data
+        '''
         sample = QA.QA_fetch_stock_day_adv(code, start, et).data
         nstart = (sample.index.get_level_values(dayindex)[-1]+dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
-        td = QA.QAFetch.QATdx.QA_fetch_get_stock_day('000977',nstart,et,if_fq='bfq')
+        td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,nstart,et,if_fq='bfq')
         td.set_index(['date','code'],inplace=True)
         td.drop(['date_stamp'], axis=1, inplace=True)
         td.rename(columns={'vol': 'volume'}, inplace=True)
         sample = pd.concat([td, sample], axis=0,sort=True)
         sample.sort_index(inplace=True,level='date')
+        '''
     elif(cg == 'index'):
         start = '2019-10-01'
         #sample = QA.QA_fetch_index_day_adv(code, start, et).data
@@ -404,5 +444,5 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 
 
 if __name__ == "__main__":
-    forceANA('515050',zo=300,ty = 'A', cg = 'index', st = 20, mi = 60, ln = 120, pt='SML',nm=3)
+    forceANA('002268',zo=300,ty = 'A', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=1)
 
