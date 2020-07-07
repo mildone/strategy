@@ -37,8 +37,8 @@ def wds(df,duration='W'):
 def divergence(wk, short=10, mid=20, long=30):
     #wk['lo'] = wk.close.rolling(window=long).mean()
     wk['lo'] = QA.MA(wk.close,long)
-    wk['mi'] = wk.close.rolling(window=mid).mean()
-    wk['sh'] = wk.close.rolling(window=short).mean()
+    wk['mi'] = QA.MA(wk.close,mid)
+    wk['sh'] = QA.MA(wk.close,short)
 
 
     wk['short'] = pd.Series.ewm(wk.close, span=short, min_periods=short - 1, adjust=True).mean()
@@ -127,10 +127,10 @@ def Plot(sample, short=10, mid=20, long=30,zoom=100):
 
 
 if __name__ == "__main__":
-    test = QA.QA_fetch_stock_day_adv('000977','2010-01-01','2020-07-01').data
-    wk = wds(test,duration='M')
+    test = QA.QA_fetch_stock_day_adv('000977','2017-01-01','2020-07-07').data
+    wk = wds(test,duration='W')
 
 
     divergence(wk)
 
-    Plot(wk,zoom=100)
+    Plot(wk,zoom=300,short=20,mid=60,long=120)

@@ -423,7 +423,8 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
 
         sample = QA.QA_fetch_stock_day_adv(code, start, et).data
         nstart = (sample.index.get_level_values(dayindex)[-1]+dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
-        if(nstart!=et):
+        print(nstart)
+        if(nstart==et):
             td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,nstart,et,if_fq='bfq')
             td.set_index(['date','code'],inplace=True)
             td.drop(['date_stamp'], axis=1, inplace=True)
@@ -437,7 +438,7 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
 
         sample = QA.QA_fetch_index_day_adv(code, start, et).data
         nstart = (sample.index.get_level_values(dayindex)[-1] + dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
-        if(nstart!=et):
+        if(nstart==et):
             td = QA.QAFetch.QATdx.QA_fetch_get_index_day(code,nstart,et)
             td.set_index(['date','code'],inplace=True)
             td.drop(['date_stamp'], axis=1, inplace=True)
@@ -455,5 +456,5 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 
 
 if __name__ == "__main__":
-    forceANA('000977',zo=300,ty = 'A', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=1,bias=True)
+    forceANA('515050',zo=300,ty = 'A', cg = 'index', st = 10, mi = 20, ln = 30, pt='SML',nm=3,bias=True)
 
