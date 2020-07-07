@@ -130,6 +130,7 @@ def divergence( day,short = 20, mid = 60, long = 120):
     day['mid'] = QA.EMA(day.close, mid)
     day['short'] = QA.EMA(day.close, short)
     day['BIAS'] = (day.close - day.long) * 100 / day.long
+    day['BMA'] = QA.EMA(day.BIAS,short)
     day['CS'] = (day.close - day.short) * 100 / day.short
     day['CM'] = (day.close - day.mid) * 100 / day.mid
     day['SM'] = (day.short - day.mid) * 100 / day.mid
@@ -252,6 +253,8 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
                     ax2.axvline(x=i, ls='--', color='red')
                 if (day.single[i] == 3):
                     ax2.axvline(x=i, ls='--', color='green')
+                if(day.single[i]==5):
+                    ax2.axvline(x=i,ls='--',color='blue')
 
         ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
         ax2.grid(True)
@@ -260,9 +263,10 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
 
         ax3 = fig.add_subplot(gs[0:1, 0:1])
         # ax3.set_title("Divergence", fontsize='xx-large', fontweight='bold')
-        ax3.plot(ind, day.SMAcc, 'r-', label='SM Acceleration', linewidth=1)
-        ax3.plot(ind, day.MLAcc, 'blue', label='ML Acceleration', linewidth=1)
-        ax3.axhline(y=0,color='white')
+        ax3.bar(ind, day.BIAS, color='grey', label='BIAS')
+        ax3.plot(ind,day.BMA, 'black')
+        ax3.plot(ind, day.CS, 'blue', label='close/sohrt', linewidth=1)
+        ax3.plot(ind, day.SM, 'green', label='short/mid', linewidth=1)
         ax3.grid(True)
         ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
         ax3.legend()
@@ -451,5 +455,5 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 
 
 if __name__ == "__main__":
-    forceANA('000977',zo=300,ty = 'A', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
+    forceANA('000977',zo=300,ty = 'A', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=1,bias=True)
 
