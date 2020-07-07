@@ -1,4 +1,6 @@
 import QUANTAXIS as QA
+from matplotlib import gridspec
+
 try:
     assert QA.__version__>='1.1.0'
 except AssertionError:
@@ -25,8 +27,10 @@ def wds(df,duration='W'):
     weekly_df['close'] = df['close'].resample(period).last()
     weekly_df['volume'] = df['volume'].resample(period).sum()
     weekly_df['amount'] = df['amount'].resample(period).sum()
-    weekly_df.reset_index('date',inplace=True)
-    weekly_df.dropna(axis=0,subset = ["open", "high","close","low"])
+    #drop the index having null value
+    #reset index after dropna
+    weekly_df.dropna(axis=0, subset=["open", "high", "close", "low"], inplace=True)
+    weekly_df.reset_index('date', inplace=True)
     return weekly_df
 
 
@@ -49,12 +53,18 @@ def divergence(wk, short=10, mid=20, long=30):
 
 
 
-def Plot(sample, short=10, mid=20, long=30):
+def Plot(sample, short=10, mid=20, long=30,zoom=100):
 
     quotes = []
+    if(sample.shape[0]>zoom):
+        sample = sample[0-zoom:]
+    else:
+        sample = sample
+    #fix, this resample data is not same as the original sorted date, now it's rangeindex starting from 0, so have to reset agagin once there is tailor happened
+    sample.reset_index( inplace=True)
     N = sample.shape[0]
     ind = np.arange(N)
-    for i in range(len(sample)):
+    for i in range(N):
         li = []
         datef = ind[i]  # 日期转换成float days
         open_p = sample.open[i]
@@ -69,22 +79,32 @@ def Plot(sample, short=10, mid=20, long=30):
         thisind = np.clip(int(x + 0.5), 0, N - 1)
         return sample.date[thisind]
 
+
     fig = plt.figure()
     fig.set_size_inches(30.5, 20.5)
+    gs = gridspec.GridSpec(7, 1)
     print('call here')
-    ax2 = fig.add_subplot(3, 1, 1)
+    ax2 = fig.add_subplot(gs[0:5,0:1])
     ax2.set_title("weekly candlestick", fontsize='xx-large', fontweight='bold')
 
     mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
     ax2.plot(ind,sample.lo,'r-',label='MA'+str(long))
     ax2.plot(ind,sample.mi,'blue',label='MA'+str(mid))
     ax2.plot(ind,sample.sh,'grey',label='MA'+str(short))
+    ratio = sample.low.median()*0.03
+    ax2.plot(N - short, sample.low[N - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+             markeredgecolor='grey')
+    # ax2.axvline(x=N-short,ls='--',color='purple')
+    ax2.plot(N - mid, sample.low[N - mid] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+             markeredgecolor='blue')
+    ax2.plot(N - long, sample.low[N - long] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+             markeredgecolor='red')
     ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
     ax2.grid(True)
     ax2.legend(loc='best')
     fig.autofmt_xdate()
 
-    ax1 = fig.add_subplot(3, 1, 2, sharex=ax2)
+    ax1 = fig.add_subplot(gs[5:7,0:1], sharex=ax2)
 
     ax1.grid(True)
     ax1.plot(ind, sample.CS, 'red',label='CS')
@@ -108,9 +128,9 @@ def Plot(sample, short=10, mid=20, long=30):
 
 if __name__ == "__main__":
     test = QA.QA_fetch_stock_day_adv('000977','2010-01-01','2020-07-01').data
-    wk = wds(test,duration='W')
+    wk = wds(test,duration='M')
 
 
     divergence(wk)
-    print(wk)
-    Plot(wk)
+
+    Plot(wk,zoom=100)

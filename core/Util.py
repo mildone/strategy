@@ -131,6 +131,7 @@ def divergence( day,short = 20, mid = 60, long = 120):
     day['short'] = QA.EMA(day.close, short)
     day['BIAS'] = (day.close - day.long) * 100 / day.long
     day['CS'] = (day.close - day.short) * 100 / day.short
+    day['CM'] = (day.close - day.mid) * 100 / day.mid
     day['SM'] = (day.short - day.mid) * 100 / day.mid
     day['ML'] = (day.mid - day.long) * 100 / day.long
     #Short MA and Mid MA
@@ -140,7 +141,7 @@ def divergence( day,short = 20, mid = 60, long = 120):
     return day
 
 
-def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML',numofax = 3, mark = False):
+def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML',numofax = 3, mark = False,bias = True):
     """
     value of Type:
     * E or A  at least 1, E means EMA, A means MA
@@ -279,7 +280,11 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         ax3.plot(ind, day.CS, 'r-', label='CS', linewidth=1)
         ax3.plot(ind, day.SM, 'blue', label='SM', linewidth=1)
         ax3.plot(ind, day.ML, color='green', label='ML', linewidth=1)
-        ax3.bar(ind, day.BIAS, color='grey', label='BIAS')
+        if(bias):
+            ax3.bar(ind, day.BIAS, color='grey', label='BIAS')
+        else:
+            ax3.bar(ind, day.CM, color = 'grey', label = 'CLOSE/MID')
+
 
         ax3.grid(True)
         ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
@@ -346,10 +351,10 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
                  str(day.close[N - long]),
                  fontdict={'size': '12', 'color': 'b'})
         ax2.text(N - 1, day.high[-1] + ratio,
-                 str(day.close[-1]),
+                 'cur: '+str(day.close[-1]),
                  fontdict={'size': '8', 'color': 'b'})
         ax2.text(N - 1, day.high[-1] + 3*ratio,
-                 str(day.long[-1]),
+                 '120: '+str(day.long[-1]),
                  fontdict={'size': '8', 'color': 'b'})
         if(mark):
             ax2.axhline(y=day.close[N - long], ls='--', color='red')
@@ -410,39 +415,41 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
     print(et)
     if(cg == 'stock'):
         start = '2010-01-01'
-        sample = QA.QA_fetch_stock_day_adv(code, start, et).data
-        '''
+        #sample = QA.QA_fetch_stock_day_adv(code, start, et).data
+
         sample = QA.QA_fetch_stock_day_adv(code, start, et).data
         nstart = (sample.index.get_level_values(dayindex)[-1]+dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
-        td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,nstart,et,if_fq='bfq')
-        td.set_index(['date','code'],inplace=True)
-        td.drop(['date_stamp'], axis=1, inplace=True)
-        td.rename(columns={'vol': 'volume'}, inplace=True)
-        sample = pd.concat([td, sample], axis=0,sort=True)
-        sample.sort_index(inplace=True,level='date')
-        '''
+        if(nstart!=et):
+            td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,nstart,et,if_fq='bfq')
+            td.set_index(['date','code'],inplace=True)
+            td.drop(['date_stamp'], axis=1, inplace=True)
+            td.rename(columns={'vol': 'volume'}, inplace=True)
+            sample = pd.concat([td, sample], axis=0,sort=True)
+            sample.sort_index(inplace=True,level='date')
+
     elif(cg == 'index'):
         start = '2019-10-01'
         #sample = QA.QA_fetch_index_day_adv(code, start, et).data
 
         sample = QA.QA_fetch_index_day_adv(code, start, et).data
         nstart = (sample.index.get_level_values(dayindex)[-1] + dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
-        td = QA.QAFetch.QATdx.QA_fetch_get_index_day(code,nstart,et)
-        td.set_index(['date','code'],inplace=True)
-        td.drop(['date_stamp'], axis=1, inplace=True)
-        td.rename(columns={'vol': 'volume'}, inplace=True)
-        sample = pd.concat([td, sample], axis=0,sort=True)
-        dd = sample.sort_index(inplace=True,level='date')
+        if(nstart!=et):
+            td = QA.QAFetch.QATdx.QA_fetch_get_index_day(code,nstart,et)
+            td.set_index(['date','code'],inplace=True)
+            td.drop(['date_stamp'], axis=1, inplace=True)
+            td.rename(columns={'vol': 'volume'}, inplace=True)
+            sample = pd.concat([td, sample], axis=0,sort=True)
+            sample.sort_index(inplace=True,level='date')
 
     return sample
 
 
-def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt='SM',nm=3):
+def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt='SM',nm=3,bias=True):
     dd = prepareData(code,cg=cg)
-    PlotBySe(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln,plot=pt,numofax=nm)
+    PlotBySe(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln,plot=pt,numofax=nm,bias=bias)
 
 
 
 if __name__ == "__main__":
-    forceANA('002268',zo=300,ty = 'A', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=1)
+    forceANA('000977',zo=300,ty = 'A', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
 
