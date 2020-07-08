@@ -127,7 +127,7 @@ def Plot(sample, short=10, mid=20, long=30,zoom=100):
 
 
 if __name__ == "__main__":
-    test = QA.QA_fetch_stock_day_adv('000977','2017-01-01','2020-07-07').data
+    test = QA.QA_fetch_stock_day_adv('000977','2015-01-01','2020-07-07').data
     wk = wds(test,duration='W')
 
 

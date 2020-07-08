@@ -281,6 +281,7 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         ax3 = fig.add_subplot(gs[0:1, 0:1])
         #ax3.set_title("Divergence", fontsize='xx-large', fontweight='bold')
         ax3.bar(ind, day.BIAS, color='blue')
+        ax3.axhline(y=day.BIAS[-1],color='grey',ls='--')
         ax3.plot(ind, day.CS, 'r-', label='CS', linewidth=1)
         ax3.plot(ind, day.SM, 'blue', label='SM', linewidth=1)
         ax3.plot(ind, day.ML, color='green', label='ML', linewidth=1)
@@ -424,7 +425,7 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
         sample = QA.QA_fetch_stock_day_adv(code, start, et).data
         nstart = (sample.index.get_level_values(dayindex)[-1]+dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
         print(nstart)
-        if(nstart==et):
+        if(nstart<=et):
             td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,nstart,et,if_fq='bfq')
             td.set_index(['date','code'],inplace=True)
             td.drop(['date_stamp'], axis=1, inplace=True)
@@ -438,7 +439,7 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
 
         sample = QA.QA_fetch_index_day_adv(code, start, et).data
         nstart = (sample.index.get_level_values(dayindex)[-1] + dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
-        if(nstart==et):
+        if(nstart<=et):
             td = QA.QAFetch.QATdx.QA_fetch_get_index_day(code,nstart,et)
             td.set_index(['date','code'],inplace=True)
             td.drop(['date_stamp'], axis=1, inplace=True)
@@ -456,5 +457,5 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 
 
 if __name__ == "__main__":
-    forceANA('515050',zo=300,ty = 'A', cg = 'index', st = 10, mi = 20, ln = 30, pt='SML',nm=3,bias=True)
+    forceANA('002268',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
 
