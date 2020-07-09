@@ -406,7 +406,7 @@ def getWeekDate(daytime):
     # return Timestamp('2020-05-11 00:00:00')
     return daytime + dateutil.relativedelta.relativedelta(days=(6 - daytime.dayofweek))
 
-def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
+def prepareData(code,start='2019-01-01',cg='stock',source='DB',frequence='day'):
     cur = datetime.datetime.now()
     mon = str(cur.month)
     day = str(cur.day)
@@ -418,7 +418,7 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
     et = str(cur.year) + '-' + mon + '-' + day
     #et = '2020-07-01'
     print(et)
-    if(cg == 'stock'):
+    if(cg == 'stock' and frequence=='day'):
         start = '2010-01-01'
         #sample = QA.QA_fetch_stock_day_adv(code, start, et).data
 
@@ -432,6 +432,25 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB'):
             td.rename(columns={'vol': 'volume'}, inplace=True)
             sample = pd.concat([td, sample], axis=0,sort=True)
             sample.sort_index(inplace=True,level='date')
+    elif(cg == 'stock' and frequence!='day'):
+        start = '2010-01-01'
+        #sample = QA.QA_fetch_stock_day_adv(code, start, et).data
+
+        sample = QA.QA_fetch_stock_min_adv(code, start, et,frequence=frequence).data
+        nstart = (sample.index.get_level_values(index)[-1]+dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
+        #nstart = (sample.index.get_level_values(dayindex)[-1]+dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
+        print(nstart)
+        if(nstart<=et):
+            m15 = QA.QA_fetch_get_stock_min('tdx', code, et, et, level=frequence)
+            # convert online data to adv data(basically multi_index setting, drop unused column and contact 2 dataframe as 1)
+            # this is network call
+            m15.set_index(['datetime', 'code'], inplace=True)
+            m15.drop(['date', 'date_stamp', 'time_stamp'], axis=1, inplace=True)
+
+            m15.rename(columns={'vol': 'volume'}, inplace=True)
+            sample = pd.concat([m15, sample], axis=0, sort=True)
+            sample.sort_index(inplace=True, level='datetime')
+
 
     elif(cg == 'index'):
         start = '2019-10-01'
@@ -457,5 +476,5 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 
 
 if __name__ == "__main__":
-    forceANA('002268',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
+    forceANA('515880',zo=300,ty = 'EA', cg = 'index', st = 20, mi = 30, ln = 60, pt='SML',nm=3,bias=True)
 
