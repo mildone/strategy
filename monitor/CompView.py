@@ -20,7 +20,7 @@ import core.zoom as zo
 
 def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300):
     td = uti.prepareData(code)
-    uti.divergence(td )
+
 
 
     wk = zo.wds(td,duration='w')
@@ -31,6 +31,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300):
     t60 = uti.prepareData(code,start = '2020-01-01',frequence='60min')
     uti.divergence(t15)
     uti.divergence(t60)
+    uti.divergence(td)
 
     #t60qu = uti.candlestruct(t60)
     #t15qu = uti.candlestruct(t15)
@@ -142,8 +143,28 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300):
     fig.autofmt_xdate()
 
     ax21 = fig.add_subplot(gs[4:8, 0:4])
+    NW = wk.shape[0]
+    indw = np.arange(NW)
+
+    def format6_date(x, pos=None):
+        thisind = np.clip(int(x + 0.5), 0, NW - 1)
+        return wk.index.get_level_values(uti.dayindex)[thisind]
     ax21.set_title("week", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax21, wqu, width=0.6, colorup='r', colordown='g', alpha=1.0)
+
+    ax21.plot(indw, wk.sh, 'r-', label='short', linewidth=0.7)
+    ax21.plot(indw, wk.mi, 'blue', label='mid', linewidth=0.7)
+    ax21.plot(indw, wk.lo, 'purple', label='long', linewidth=0.7)
+    ratio = wk.low.median() * 0.03
+    ax21.plot(NW - short, wk.low[NW - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+              markeredgecolor='red')
+    # ax2.axvline(x=N-short,ls='--',color='purple')
+    ax21.plot(NW - mid, wk.low[NW - mid] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+              markeredgecolor='blue')
+    ax21.plot(NW - long, wk.low[NW - long] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+              markeredgecolor='purple')
+
+
     ax21.grid(True)
     ax21.legend(loc='best')
     fig.autofmt_xdate()
