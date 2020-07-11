@@ -406,16 +406,19 @@ def getWeekDate(daytime):
     # return Timestamp('2020-05-11 00:00:00')
     return daytime + dateutil.relativedelta.relativedelta(days=(6 - daytime.dayofweek))
 
-def prepareData(code,start='2019-01-01',cg='stock',source='DB',frequence='day'):
-    cur = datetime.datetime.now()
-    mon = str(cur.month)
-    day = str(cur.day)
-    if (re.match('[0-9]{1}', mon) and len(mon) == 1):
-        mon = '0' + mon
-    if (re.match('[0-9]{1}', day) and len(day) == 1):
-        day = '0' + day
+def prepareData(code,start='2019-01-01',end = 'cur', cg='stock',source='DB',frequence='day'):
+    if(end == 'cur'):
+        cur = datetime.datetime.now()
+        mon = str(cur.month)
+        day = str(cur.day)
+        if (re.match('[0-9]{1}', mon) and len(mon) == 1):
+            mon = '0' + mon
+        if (re.match('[0-9]{1}', day) and len(day) == 1):
+            day = '0' + day
 
-    et = str(cur.year) + '-' + mon + '-' + day
+        et = str(cur.year) + '-' + mon + '-' + day
+    else:
+        et = end
     #et = '2020-07-01'
     print(et)
     if(cg == 'stock' and frequence=='day'):
@@ -452,7 +455,7 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB',frequence='day'):
             sample.sort_index(inplace=True, level='datetime')
 
 
-    elif(cg == 'index'):
+    elif(cg == 'index' and frequence=='day'):
         start = '2019-10-01'
         #sample = QA.QA_fetch_index_day_adv(code, start, et).data
 
@@ -465,6 +468,23 @@ def prepareData(code,start='2019-01-01',cg='stock',source='DB',frequence='day'):
             td.rename(columns={'vol': 'volume'}, inplace=True)
             sample = pd.concat([td, sample], axis=0,sort=True)
             sample.sort_index(inplace=True,level='date')
+    elif(cg == 'index' and frequence !='day'):
+        start = '2019-09-01'
+        nstart = start
+        #sample = QA.QA_fetch_index_min_adv(code, start, et, frequence=frequence).data
+        #nstart = (sample.index.get_level_values(index)[-1] + dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
+        # nstart = (sample.index.get_level_values(dayindex)[-1]+dateutil.relativedelta.relativedelta(days=1)).strftime(dayformate)
+        if (nstart <= et):
+            m15 = QA.QA_fetch_get_index_min('tdx', code, nstart, et, level=frequence)
+            # convert online data to adv data(basically multi_index setting, drop unused column and contact 2 dataframe as 1)
+            # this is network call
+            m15.set_index(['datetime', 'code'], inplace=True)
+            m15.drop(['date', 'date_stamp', 'time_stamp'], axis=1, inplace=True)
+
+            m15.rename(columns={'vol': 'volume'}, inplace=True)
+            sample = m15
+            sample.sort_index(inplace=True, level='datetime')
+
 
     return sample
 
@@ -476,5 +496,5 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 
 
 if __name__ == "__main__":
-    forceANA('515880',zo=300,ty = 'EA', cg = 'index', st = 20, mi = 30, ln = 60, pt='SML',nm=3,bias=True)
+    forceANA('000977',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 30, ln = 60, pt='SML',nm=3,bias=True)
 

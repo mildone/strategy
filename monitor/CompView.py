@@ -18,8 +18,9 @@ import mpl_finance as mpf
 import core.Util as uti
 import core.zoom as zo
 
-def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300):
-    td = uti.prepareData(code)
+def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stock'):
+    endn = end
+    td = uti.prepareData(code,end=endn,cg=cg)
 
 
 
@@ -27,8 +28,8 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300):
     zo.divergence(wk)
     wqu = uti.candlestruct(wk)
 
-    t15 = uti.prepareData(code,start = '2020-01-01',frequence='15min')
-    t60 = uti.prepareData(code,start = '2020-01-01',frequence='60min')
+    t15 = uti.prepareData(code,start = '2020-01-01',frequence='15min',end=endn,cg=cg)
+    t60 = uti.prepareData(code,start = '2020-01-01',frequence='60min',end=endn,cg=cg)
     uti.divergence(t15)
     uti.divergence(t60)
     uti.divergence(td)
@@ -156,12 +157,17 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300):
     ax21.plot(indw, wk.mi, 'blue', label='mid', linewidth=0.7)
     ax21.plot(indw, wk.lo, 'purple', label='long', linewidth=0.7)
     ratio = wk.low.median() * 0.03
-    ax21.plot(NW - short, wk.low[NW - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+    if(NW>short):
+        ax21.plot(NW - short, wk.low[NW - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
               markeredgecolor='red')
+    else:
+        pass
     # ax2.axvline(x=N-short,ls='--',color='purple')
-    ax21.plot(NW - mid, wk.low[NW - mid] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+    if(NW>mid):
+        ax21.plot(NW - mid, wk.low[NW - mid] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
               markeredgecolor='blue')
-    ax21.plot(NW - long, wk.low[NW - long] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
+    if(NW>long):
+        ax21.plot(NW - long, wk.low[NW - long] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
               markeredgecolor='purple')
 
 
@@ -173,7 +179,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300):
     plt.show()
 
 if __name__ == '__main__':
-    compView('000977','2019-01-01','2020-07-01',zoom=1000)
+    compView('515050','2019-01-01','cur',zoom=1000,cg='index')
 
 
 
