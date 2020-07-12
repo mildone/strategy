@@ -1,16 +1,11 @@
 import QUANTAXIS as QA
-import dateutil
 
 try:
     assert QA.__version__ >= '1.1.0'
 except AssertionError:
     print('pip install QUANTAXIS >= 1.1.0 请升级QUANTAXIS后再运行此示例')
     import QUANTAXIS as QA
-from abupy import ABuRegUtil
-
-import re
 from matplotlib import gridspec
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtk
@@ -38,9 +33,9 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     #t15qu = uti.candlestruct(t15)
 
     fig = plt.figure()
-    gs = gridspec.GridSpec(8, 8)
-    fig.set_size_inches(80.5, 70.5)
-    ax2 = fig.add_subplot(gs[0:4, 0:4])
+    gs = gridspec.GridSpec(10, 8)
+    fig.set_size_inches(100.5, 90.5)
+
 
     if (zoom > t15.shape[0]):
         t15=t15
@@ -54,6 +49,15 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
         thisind = np.clip(int(x + 0.5), 0, N1 - 1)
         return t15.index.get_level_values(uti.index)[thisind]
 
+    ax20 = fig.add_subplot(gs[0:1, 0:4])
+    ax20.grid(True)
+    ax20.bar(ind1,t15.BIAS,color='grey')
+    ax20.plot(ind1,t15.CS,'r-',linewidth=0.7)
+    ax20.legend(loc='best')
+    ax20.xaxis.set_major_formatter(mtk.FuncFormatter(format1_date))
+    fig.autofmt_xdate()
+
+    ax2 = fig.add_subplot(gs[1:5, 0:4],sharex=ax20)
 
     ax2.set_title("15 min", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax2, t15qu, width=0.6, colorup='r', colordown='g', alpha=1.0)
@@ -78,7 +82,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format1_date))
     fig.autofmt_xdate()
 
-    ax3 = fig.add_subplot(gs[0:4, 4:8])
+
 
     if (zoom > t60.shape[0]):
         t60=t60
@@ -91,6 +95,17 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     def format6_date(x, pos=None):
         thisind = np.clip(int(x + 0.5), 0, N6 - 1)
         return t60.index.get_level_values(uti.index)[thisind]
+
+    ax203= fig.add_subplot(gs[0:1, 4:8])
+    ax203.grid(True)
+    ax203.bar(ind6, t60.BIAS, color='grey')
+    ax203.plot(ind6, t60.CS, 'r-', linewidth=0.7)
+    ax203.legend(loc='best')
+    ax203.xaxis.set_major_formatter(mtk.FuncFormatter(format6_date))
+    fig.autofmt_xdate()
+
+
+    ax3 = fig.add_subplot(gs[1:5, 4:8],sharex=ax203)
     ax3.set_title("60 min", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax3, t60qu, width=0.6, colorup='r', colordown='g', alpha=1.0)
     ax3.grid(True)
@@ -112,7 +127,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
 
 
 
-    ax31 = fig.add_subplot(gs[4:8, 4:8])
+
     if(zoom>td.shape[0]):
         td=td
     else:
@@ -124,6 +139,16 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     def format_date(x, pos=None):
         thisind = np.clip(int(x + 0.5), 0, N - 1)
         return td.index.get_level_values(uti.dayindex)[thisind]
+
+    ax310 = fig.add_subplot(gs[5:6, 4:8])
+    ax310.grid(True)
+    ax310.bar(ind, td.BIAS, color='grey')
+    ax310.plot(ind, td.CS, 'r-', linewidth=0.7)
+    ax310.legend(loc='best')
+    ax310.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+    fig.autofmt_xdate()
+
+    ax31 = fig.add_subplot(gs[6:10, 4:8],sharex=ax310)
     ax31.set_title("day", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax31, tqu, width=0.6, colorup='r', colordown='g', alpha=1.0)
     ax31.plot(ind,td.sh,'r-',label='short',linewidth=0.7)
@@ -143,13 +168,23 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax31.legend(loc='best')
     fig.autofmt_xdate()
 
-    ax21 = fig.add_subplot(gs[4:8, 0:4])
+
     NW = wk.shape[0]
     indw = np.arange(NW)
 
-    def format6_date(x, pos=None):
+    def formatwk_date(x, pos=None):
         thisind = np.clip(int(x + 0.5), 0, NW - 1)
         return wk.index.get_level_values(uti.dayindex)[thisind]
+
+    ax210 = fig.add_subplot(gs[5:6, 0:4])
+    ax210.grid(True)
+    ax210.bar(indw, wk.BIAS, color='grey')
+    ax210.plot(indw, wk.CS, 'r-', linewidth=0.7)
+    ax210.legend(loc='best')
+    #ax210.xaxis.set_major_formatter(mtk.FuncFormatter(formatwk_date))
+    fig.autofmt_xdate()
+
+    ax21 = fig.add_subplot(gs[6:10, 0:4],sharex=ax210)
     ax21.set_title("week", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax21, wqu, width=0.6, colorup='r', colordown='g', alpha=1.0)
 
