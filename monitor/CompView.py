@@ -34,7 +34,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     #t15qu = uti.candlestruct(t15)
 
     fig = plt.figure()
-    gs = gridspec.GridSpec(12, 8)
+    gs = gridspec.GridSpec(12, 9)
     fig.set_size_inches(100.5, 90.5)
 
 
@@ -108,7 +108,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
         thisind = np.clip(int(x + 0.5), 0, N6 - 1)
         return t60.index.get_level_values(uti.index)[thisind]
 
-    ax203= fig.add_subplot(gs[0:1, 4:8])
+    ax203= fig.add_subplot(gs[0:1, 5:9])
     ax203.grid(True)
     ax203.bar(ind6, t60.BIAS, color='grey')
     ax203.plot(ind6, t60.CS, 'r-', linewidth=0.7)
@@ -117,7 +117,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     fig.autofmt_xdate()
 
 
-    ax3 = fig.add_subplot(gs[1:5, 4:8],sharex=ax203)
+    ax3 = fig.add_subplot(gs[1:5, 5:9],sharex=ax203)
     ax3.set_title("60 min", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax3, t60qu, width=0.6, colorup='r', colordown='g', alpha=1.0)
     ax3.grid(True)
@@ -137,7 +137,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format6_date))
     fig.autofmt_xdate()
 
-    ax232 = fig.add_subplot(gs[5:6, 4:8],sharex = ax203)
+    ax232 = fig.add_subplot(gs[5:6, 5:9],sharex = ax203)
     ax232.grid(True)
     ax232.bar(ind6, t60.volume, color='blue')
     ax232.legend(loc='best')
@@ -159,7 +159,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
         thisind = np.clip(int(x + 0.5), 0, N - 1)
         return td.index.get_level_values(uti.dayindex)[thisind].strftime(uti.dayformate)
 
-    ax310 = fig.add_subplot(gs[6:7, 4:8])
+    ax310 = fig.add_subplot(gs[6:7, 5:9])
     ax310.grid(True)
     ax310.bar(ind, td.BIAS, color='grey')
     ax310.plot(ind, td.CS, 'r-', linewidth=0.7)
@@ -167,7 +167,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax310.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
     fig.autofmt_xdate()
 
-    ax31 = fig.add_subplot(gs[7:11, 4:8],sharex=ax310)
+    ax31 = fig.add_subplot(gs[7:11, 5:9],sharex=ax310)
     ax31.set_title("day", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax31, tqu, width=0.6, colorup='r', colordown='g', alpha=1.0)
     ax31.plot(ind,td.sh,'r-',label='short',linewidth=0.7)
@@ -187,7 +187,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax31.legend(loc='best')
     fig.autofmt_xdate()
 
-    ax242 = fig.add_subplot(gs[11:12, 4:8], sharex=ax310)
+    ax242 = fig.add_subplot(gs[11:12, 5:9], sharex=ax310)
     ax242.grid(True)
     ax242.bar(ind, td.volume, color='blue')
     ax242.legend(loc='best')
