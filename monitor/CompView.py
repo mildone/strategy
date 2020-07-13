@@ -12,6 +12,7 @@ import matplotlib.ticker as mtk
 import mpl_finance as mpf
 import core.Util as uti
 import core.zoom as zo
+import pandas as pd
 
 def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stock'):
     endn = end
@@ -33,7 +34,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     #t15qu = uti.candlestruct(t15)
 
     fig = plt.figure()
-    gs = gridspec.GridSpec(10, 8)
+    gs = gridspec.GridSpec(12, 8)
     fig.set_size_inches(100.5, 90.5)
 
 
@@ -47,6 +48,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
 
     def format1_date(x, pos=None):
         thisind = np.clip(int(x + 0.5), 0, N1 - 1)
+        #return thisind
         return t15.index.get_level_values(uti.index)[thisind]
 
     ax20 = fig.add_subplot(gs[0:1, 0:4])
@@ -54,6 +56,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax20.bar(ind1,t15.BIAS,color='grey')
     ax20.plot(ind1,t15.CS,'r-',linewidth=0.7)
     ax20.legend(loc='best')
+    #plt.xticks(pd.date_range(t15.index.get_level_values(uti.index)[0],t15.index.get_level_values(uti.index)[-1]),rotation=6)
     ax20.xaxis.set_major_formatter(mtk.FuncFormatter(format1_date))
     fig.autofmt_xdate()
 
@@ -68,6 +71,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax2.plot(ind1, t15.mi, 'blue', label='mid', linewidth=0.7)
     ax2.plot(ind1, t15.long, 'purple', label='long', linewidth=0.7)
 
+
     ratio = t15.low.median() * 0.03
     ax2.plot(N1 - short, t15.low[N1 - short] - ratio, '^', markersize=4, markeredgewidth=2, markerfacecolor='None',
              markeredgecolor='red')
@@ -80,6 +84,14 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     #ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
     ax2.legend(loc='best')
     ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format1_date))
+    fig.autofmt_xdate()
+
+    ax202 = fig.add_subplot(gs[5:6, 0:4],sharex = ax20)
+    ax202.grid(True)
+    ax202.bar(ind1, t15.volume, color='blue')
+    ax202.legend(loc='best')
+    # plt.xticks(pd.date_range(t15.index.get_level_values(uti.index)[0],t15.index.get_level_values(uti.index)[-1]),rotation=6)
+    ax202.xaxis.set_major_formatter(mtk.FuncFormatter(format1_date))
     fig.autofmt_xdate()
 
 
@@ -125,6 +137,13 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format6_date))
     fig.autofmt_xdate()
 
+    ax232 = fig.add_subplot(gs[5:6, 4:8],sharex = ax203)
+    ax232.grid(True)
+    ax232.bar(ind6, t60.volume, color='blue')
+    ax232.legend(loc='best')
+    # plt.xticks(pd.date_range(t15.index.get_level_values(uti.index)[0],t15.index.get_level_values(uti.index)[-1]),rotation=6)
+    ax232.xaxis.set_major_formatter(mtk.FuncFormatter(format6_date))
+    fig.autofmt_xdate()
 
 
 
@@ -138,9 +157,9 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
 
     def format_date(x, pos=None):
         thisind = np.clip(int(x + 0.5), 0, N - 1)
-        return td.index.get_level_values(uti.dayindex)[thisind]
+        return td.index.get_level_values(uti.dayindex)[thisind].strftime(uti.dayformate)
 
-    ax310 = fig.add_subplot(gs[5:6, 4:8])
+    ax310 = fig.add_subplot(gs[6:7, 4:8])
     ax310.grid(True)
     ax310.bar(ind, td.BIAS, color='grey')
     ax310.plot(ind, td.CS, 'r-', linewidth=0.7)
@@ -148,7 +167,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax310.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
     fig.autofmt_xdate()
 
-    ax31 = fig.add_subplot(gs[6:10, 4:8],sharex=ax310)
+    ax31 = fig.add_subplot(gs[7:11, 4:8],sharex=ax310)
     ax31.set_title("day", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax31, tqu, width=0.6, colorup='r', colordown='g', alpha=1.0)
     ax31.plot(ind,td.sh,'r-',label='short',linewidth=0.7)
@@ -168,6 +187,14 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax31.legend(loc='best')
     fig.autofmt_xdate()
 
+    ax242 = fig.add_subplot(gs[11:12, 4:8], sharex=ax310)
+    ax242.grid(True)
+    ax242.bar(ind, td.volume, color='blue')
+    ax242.legend(loc='best')
+    # plt.xticks(pd.date_range(t15.index.get_level_values(uti.index)[0],t15.index.get_level_values(uti.index)[-1]),rotation=6)
+    ax242.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+    fig.autofmt_xdate()
+
 
     NW = wk.shape[0]
     indw = np.arange(NW)
@@ -176,7 +203,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
         thisind = np.clip(int(x + 0.5), 0, NW - 1)
         return wk.index.get_level_values(uti.dayindex)[thisind]
 
-    ax210 = fig.add_subplot(gs[5:6, 0:4])
+    ax210 = fig.add_subplot(gs[6:7, 0:4])
     ax210.grid(True)
     ax210.bar(indw, wk.BIAS, color='grey')
     ax210.plot(indw, wk.CS, 'r-', linewidth=0.7)
@@ -184,7 +211,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     #ax210.xaxis.set_major_formatter(mtk.FuncFormatter(formatwk_date))
     fig.autofmt_xdate()
 
-    ax21 = fig.add_subplot(gs[6:10, 0:4],sharex=ax210)
+    ax21 = fig.add_subplot(gs[7:11, 0:4],sharex=ax210)
     ax21.set_title("week", fontsize='xx-large', fontweight='bold')
     mpf.candlestick_ochl(ax21, wqu, width=0.6, colorup='r', colordown='g', alpha=1.0)
 
@@ -210,11 +237,19 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     ax21.legend(loc='best')
     fig.autofmt_xdate()
 
+    ax252 = fig.add_subplot(gs[11:12, 0:4], sharex=ax210)
+    ax252.grid(True)
+    ax252.bar(indw, wk.volume, color='blue')
+    ax252.legend(loc='best')
+    # plt.xticks(pd.date_range(t15.index.get_level_values(uti.index)[0],t15.index.get_level_values(uti.index)[-1]),rotation=6)
+    #ax252.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+    fig.autofmt_xdate()
+
 
     plt.show()
 
 if __name__ == '__main__':
-    compView('515050','2019-01-01','cur',zoom=1000,cg='index')
+    compView('515880','2019-01-01','cur',zoom=1000,cg='index')
 
 
 
