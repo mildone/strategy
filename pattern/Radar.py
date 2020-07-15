@@ -83,7 +83,7 @@ def radarv2(sample,short=20,mid=60,long=120,level='15min'):
             m6s.append(1)
             buy = 1
             sell = 0
-        elif (t6.CS[i] < 0 and t6.SM[i] < 0 and t6.ML[i] < 0 and sell == 0):
+        elif (t6.CS[i] < 0 and t6.SM[i] < 0 and t6.ML[i]<0 and sell == 0):
             m6s.append(3)
             buy = 0
             sell = 1

@@ -249,7 +249,7 @@ def compView(code, start, end,short = 20, mid = 60, long = 120,zoom=300,cg='stoc
     plt.show()
 
 if __name__ == '__main__':
-    compView('512720','2019-01-01','cur',zoom=1000,cg='index')
+    compView('515880','2019-01-01','cur',zoom=1000,cg='index')
 
 
 
