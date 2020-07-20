@@ -40,6 +40,15 @@ def loadLocalData(stocks, start_date='2019-03-15', end='cur'):
     data = QA.QA_fetch_stock_day_adv(stocks, start_date, et)
     return data
 
+def change(dd):
+    from functools import reduce
+    pp_array = [float(close) for close in dd.close]
+    temp_array = [(price1, price2) for price1, price2 in zip(pp_array[:-1], pp_array[1:])]
+    change = list(map(lambda pp: reduce(lambda a, b: round((b - a) / a, 3), pp), temp_array))
+    change.insert(0, 0)
+    dd['change']=change
+    return dd
+
 
 if __name__ == '__main__':
     stock = getStocklist()
@@ -55,6 +64,19 @@ if __name__ == '__main__':
     m = loadLocalData(stock)
     num = 0
     win = 0
+    ind = m.add_func(change)
+    data_forbacktest = m.select_time('2020-01-01', '2020-07-15')
+    for items in data_forbacktest.panel_gen:
+        num = 0
+        win = 0
+        for item in items.security_gen:
+            daily_ind = ind.loc[item.index]
+            num += 1
+            print('{} at {} with {} and {}'.format(item.code[0], item.date[0], item.close[0], daily_ind.change.iloc[0]))
+            if (daily_ind.change.iloc[0] > 1):
+                win += 1
+        print('------' + str(items.date[0]) + '------' + str(win) + '/' + str(num))
+    '''
     for i in stock:
         try:
             sample = m.select_code(i).data
@@ -66,4 +88,4 @@ if __name__ == '__main__':
             pass
 
     print('{} / {} '.format(win,num))
-
+    '''
