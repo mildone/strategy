@@ -3,6 +3,12 @@ import re
 
 import QUANTAXIS as QA
 import core.Util as uti
+import os
+import numpy as np
+import pandas as pd
+
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtk
 
 def getStocklist():
     """
@@ -16,7 +22,7 @@ def getStocklist():
     return stocklist
 
 
-def loadLocalData(stocks, start_date='2019-03-15', end='cur'):
+def loadLocalData(stocks, start_date='2020-01-02', end='cur'):
     """
     data() as pdDataFrame
     stocks could be list of all the stock or some. if you pass single one e.g. 000001 it will get one only
@@ -36,7 +42,7 @@ def loadLocalData(stocks, start_date='2019-03-15', end='cur'):
         et = str(cur.year) + '-' + mon + '-' + day
     else:
         et = end
-
+    print('ok here')
     data = QA.QA_fetch_stock_day_adv(stocks, start_date, et)
     return data
 
@@ -50,7 +56,17 @@ def change(dd):
     return dd
 
 
-if __name__ == '__main__':
+def analysis():
+
+    '''
+    if(os.path.exists('stock.npy')):
+        print('load from file')
+        stock = np.load('stock.npy')
+    else:
+        print('query from net')
+        stock = getStocklist()
+        np.save('stock.npy',stock)
+    '''
     stock = getStocklist()
 
     codelist3 = QA.QA_fetch_stock_block_adv().get_block('云计算').code[:]
@@ -65,27 +81,57 @@ if __name__ == '__main__':
     num = 0
     win = 0
     ind = m.add_func(change)
-    data_forbacktest = m.select_time('2020-01-01', '2020-07-15')
+    st = '2020-01-01'
+    data_forbacktest = m.select_time(st, '2020-07-15')
+
+    start = {'date': [st], 'value': [0]}
+    df = pd.DataFrame(start)
+    df.set_index('date', inplace=True)
     for items in data_forbacktest.panel_gen:
         num = 0
         win = 0
         for item in items.security_gen:
             daily_ind = ind.loc[item.index]
             num += 1
-            print('{} at {} with {} and {}'.format(item.code[0], item.date[0], item.close[0], daily_ind.change.iloc[0]))
-            if (daily_ind.change.iloc[0] > 1):
+            # print('{} at {} with {} and {}'.format(item.code[0], item.date[0], item.close[0], daily_ind.change.iloc[0]))
+            if (daily_ind.change.iloc[0] > 0):
                 win += 1
-        print('------' + str(items.date[0]) + '------' + str(win) + '/' + str(num))
-    '''
-    for i in stock:
-        try:
-            sample = m.select_code(i).data
-            #sample['change'] = uti.change(sample.close)
-            num += 1
-            if(sample.close[-1]>sample.close[-2]):
-                win +=1
-        except:
-            pass
+        print('{} with {}'.format(item.date[0], win / num))
+        df.loc[item.date[0]] = win / num
+        # print('------' + str(items.date[0]) + '------' + str(win) + '/' + str(num))
 
-    print('{} / {} '.format(win,num))
-    '''
+    df.to_csv('marketwidth.csv')
+
+
+
+if __name__ == '__main__':
+    m = pd.read_csv('/media/sf_strategy/monitor/marketwidth.csv')
+    m.set_index('date',inplace=True)
+    N = m.shape[0]
+    ind = np.arange(N)
+
+
+    def format_date(x, pos=None):
+        thisind = np.clip(int(x + 0.5), 0, N - 1)
+        return m.index.get_level_values(uti.dayindex)[thisind]
+
+
+    fig = plt.figure()
+    #gs = gridspec.GridSpec(3, 1)
+    fig.set_size_inches(30.5, 20.5)
+    ax2 = fig.add_subplot(1,1,1)
+    # ax3.set_title("Divergence", fontsize='xx-large', fontweight='bold')
+    ax2.plot(ind, m.value,'r-',linewidth=1)
+    ax2.grid(True)
+    ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+
+    fig.autofmt_xdate()
+    plt.show()
+
+
+
+
+
+
+
+
