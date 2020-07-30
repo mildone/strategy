@@ -1776,6 +1776,76 @@ def trendWeekMinv2(sample,short=5, long=10, freq='15min'):
 
     return sample
 
+def trendWeekMinv3(sample,short=5, long=10, freq='15min'):
+    #to get Week and 60 minutes syntony together
+    #get week trend
+    #A50 64% 30 5 15 12/10
+    #
+    #60 76, 30 79, 30 74 more
+    #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
+    import quant.weekTrend as wt
+    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('*'*100)
+
+    sample.fillna(method='ffill',inplace=True)
+    wstart = '2010-01-01'
+    code = sample.index.get_level_values('code')[-1]
+    wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    temp = QA.QA_fetch_stock_day_adv(code,wstart,wend).data
+    wd = wt.wds(temp)
+    wd = wt.TrendDetect(wd)
+
+    start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
+    end = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    mindata = QA.QA_fetch_stock_min_adv(sample.index.get_level_values('code')[0], start, end, frequence= freq)
+    ms = mindata.data
+    # print(sample)
+    ms['short'] = QA.EMA(ms.close, short)
+    ms['long'] = QA.EMA(ms.close, long)
+    CROSS_5 = QA.CROSS(ms.short, ms.long)
+    CROSS_15 = QA.CROSS(ms.long, ms.short)
+
+    C15 = np.where(CROSS_15 == 1, 3, 0)
+    m = np.where(CROSS_5 == 1, 1, C15)
+    # single = m[:-1].tolist()
+    # single.insert(0, 0)
+    ms['single'] = m.tolist()
+    sig = [0]
+    if(freq=='60min'):
+        anchor = -2
+    elif(freq=='30min'):
+        anchor = -4
+    elif(freq=='15min'):
+        anchor = -8
+    for i in range(1, len(sample)):
+        dtime = sample.index.get_level_values(dayindex)[i]
+        wtime = getWeekDate(dtime)
+        windex = wd[wd.date == wtime.strftime(dayformate)].index[0]
+        # here use index to get value interested, here we take change of MACDBlock to get the short trend in week level
+        direction = wd.loc[windex].CS
+        trendv = wd.loc[windex].SM
+        temp = ms[ms.index.get_level_values(index).strftime(dayformate) == sample.index.get_level_values(dayindex)[i].strftime(dayformate)][:anchor]
+        tmp = ms[ms.index.get_level_values(index).strftime(dayformate) == sample.index.get_level_values(dayindex)[i-1].strftime(dayformate)][anchor:]
+        sing = temp.single.sum()+tmp.single.sum()
+        if(direction>0 and trendv >0 and sing==1):
+            sig.append(1)
+        elif(direction<0 and sing==3):
+            sig.append(sing)
+        else:
+            sig.append(0)
+
+    try:
+        #sample['single'] = [0]+sig[:-1]
+        sample['single']=sig
+
+    except:
+        print('error with {}'.format(sample.index.get_level_values('code')[0]))
+        sample['single'] = 0
+
+
+    return sample
+
+
 
 def doubleAvgminv2(dd, short=5, long=15, freq='60min'):
 
@@ -1853,7 +1923,7 @@ def backtestv2():
     print('init account')
     Account = QA.QA_Account(user_cookie='eric', portfolio_cookie='eric')
     Broker = QA.QA_BacktestBroker()
-    Account.reset_assets(100000)
+    Account.reset_assets(120000)
     Account.account_cookie = 'ECAP'
     # codelist=['600797','000977','601068','601069','000977']
     # 云计算，华为，5G概念
@@ -1886,7 +1956,7 @@ def backtestv2():
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    data = loadLocalData(codelist, '2019-01-01', endtime)
+    data = loadLocalData(cl, '2018-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -1906,8 +1976,10 @@ def backtestv2():
     #triNetV2 a50 10/10
     #ind = data.add_func(triNetv2)
 
-    #18/10
-    ind = data.add_func(trendWeekMinv2)
+    #18/10,currently this is job50 taking now
+    #ind = data.add_func(trendWeekMinv2)
+
+    ind = data.add_func(trendWeekMinv3)
 
     #7/10
     #ind = data.add_func(EMA_MA)
@@ -1922,7 +1994,7 @@ def backtestv2():
     #ind = data.add_func(EMAOP)
     # cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
-    data_forbacktest = data.select_time('2019-01-01', endtime)
+    data_forbacktest = data.select_time('2018-01-01', endtime)
     deal = {}
     for items in data_forbacktest.panel_gen:
         for item in items.security_gen:
