@@ -272,6 +272,10 @@ if __name__ == "__main__":
           '000333', '600031', '002384', '002241']
     print('>'*100)
     buy,sell = TrendWeekMin(cl)
+    if(len(buy)==1):
+        buy[0] = 'buy nothing'
+    if(len(sell)==1):
+        sell[0]='sell nothing'
     #buy.insert(0,'buy ')
     #sell.insert(0,'sell ')
     buy.extend(sell)
