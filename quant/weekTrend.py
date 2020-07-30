@@ -60,6 +60,16 @@ def TrendDivergence(wk, short=20, mid=60, long=120):
     return wk
 
 
+def TrendDetect(sample,short=5,mid=10,long=15):
+    sample['short'] = pd.Series.ewm(sample.close, span=short, min_periods=short - 1, adjust=True).mean()
+    sample['mid'] = pd.Series.ewm(sample.close, span=mid, min_periods=mid - 1, adjust=True).mean()
+    sample['long'] = pd.Series.ewm(sample.close, span=long, min_periods=long - 1, adjust=True).mean()
+    sample['CS'] = (sample.close - sample.short) * 100 / sample.short
+    sample['SM'] = (sample.short - sample.mid) * 100 / sample.mid
+    sample['ML'] = (sample.mid - sample.long) * 100 / sample.long
+    return sample
+
+
 
 def weektrend(sample):
     #print(sample)
