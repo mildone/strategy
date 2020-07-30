@@ -21,6 +21,8 @@ import matplotlib.ticker as mtk
 import mpl_finance as mpf
 import pattern.TrendFin as tf
 import pattern.Radar as ra
+import pattern.TriNet as tn
+import quant.Util as ut
 
 class backtest(object):
     def __init__(self):
@@ -94,7 +96,8 @@ class backtest(object):
 
         # 6/10
         #ind = data.add_func(tf.TrendFinder)
-        ind = data.add_func(ra.radarv2)
+        #ind = data.add_func(ra.radarv2)
+        ind = data.add_func(ut.triNetv2)
         #ind = data.add_func(tf.TrendFinM)
 
         # ind = data.add_func(bollStrategy)
@@ -103,7 +106,7 @@ class backtest(object):
         # ind = data.add_func(EMAOP)
         # cur = datetime.datetime.now()
         # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
-        data_forbacktest = data.select_time('2018-01-01', endtime)
+        data_forbacktest = data.select_time('2019-01-01', endtime)
         deal = {}
         for items in data_forbacktest.panel_gen:
             for item in items.security_gen:

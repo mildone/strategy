@@ -73,6 +73,7 @@ def weektrend(sample):
     sample['MACDSIG']=pd.Series.ewm(sample.MACDQ, span=9, min_periods=9 - 1, adjust=True).mean()
     sample['MACDBlock']=sample['MACDQ']-sample['MACDSIG']
     sample['trend']=sample['EMA5']-sample['EMA10']
+    sample['CS'] = (sample.close-sample.EMA5)*100/sample.EMA5
 
 
     CROSS_5 = QA.CROSS(sample.EMA5, sample.EMA10)

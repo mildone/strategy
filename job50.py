@@ -69,8 +69,8 @@ def triNetV2detect(codes, start='2019-01-01', freq='15min', short=5, long=10):
     et = str(cur.year) + '-' + mon + '-' + day
 
     #wstart = '2018-01-01'
-    buyres = []
-    sellres = []
+    buyres = ['buy ']
+    sellres = ['sell ']
     # now let's get today data from net, those are DataStructure
     daydata = QA.QA_fetch_stock_day_adv(codes, start, et)
     # also min data for analysis
@@ -182,16 +182,16 @@ if __name__ == "__main__":
           '000333', '600031', '002384', '002241']
     print('>'*100)
     buy,sell = triNetV2detect(cl)
-    buy.insert(0,'buy ')
-    sell.insert(0,'sell ')
+    #buy.insert(0,'buy ')
+    #sell.insert(0,'sell ')
     buy.extend(sell)
 
     # codelist1.extend(codelist4)
-    message = list(set(buy))
+    #message = list(set(buy))
 
     print("sending mail")
     if(len(buy)>2):
-        sendmail(' '.join(message))
+        sendmail(' '.join(buy))
     
 
 
