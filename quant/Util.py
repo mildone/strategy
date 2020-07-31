@@ -1923,7 +1923,7 @@ def backtestv2():
     print('init account')
     Account = QA.QA_Account(user_cookie='eric', portfolio_cookie='eric')
     Broker = QA.QA_BacktestBroker()
-    Account.reset_assets(120000)
+    Account.reset_assets(100000)
     Account.account_cookie = 'ECAP'
     # codelist=['600797','000977','601068','601069','000977']
     # 云计算，华为，5G概念
@@ -1956,7 +1956,7 @@ def backtestv2():
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    data = loadLocalData(cl, '2018-01-01', endtime)
+    data = loadLocalData(cl, '2019-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -1978,7 +1978,7 @@ def backtestv2():
 
     #18/10,currently this is job50 taking now
     #ind = data.add_func(trendWeekMinv2)
-
+    #26/12
     ind = data.add_func(trendWeekMinv3)
 
     #7/10
@@ -1994,7 +1994,7 @@ def backtestv2():
     #ind = data.add_func(EMAOP)
     # cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
-    data_forbacktest = data.select_time('2018-01-01', endtime)
+    data_forbacktest = data.select_time('2019-01-01', endtime)
     deal = {}
     for items in data_forbacktest.panel_gen:
         for item in items.security_gen:
