@@ -1978,7 +1978,7 @@ def backtestv2():
 
     #18/10,currently this is job50 taking now
     #ind = data.add_func(trendWeekMinv2)
-    #26/12
+    #21/10
     ind = data.add_func(trendWeekMinv3)
 
     #7/10

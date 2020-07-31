@@ -190,6 +190,7 @@ def TrendWeekMin(codes, start='2019-01-01', freq='15min', short=5, long=10):
         wd = wds(sample)
         wd = TrendDetect(wd)
         direction = wd.CS.to_list()[-1]  # now we got week trend
+        trendv = wd.SM.to_list()[-1]
 
         # deal with 15 min status
         # start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
@@ -225,7 +226,7 @@ def TrendWeekMin(codes, start='2019-01-01', freq='15min', short=5, long=10):
             anchor = -8
 
         sig = ms[-16:].single.sum()
-        if (direction > 0 and sig == 1):
+        if (direction > 0 and trendv >0 and sig == 1):
             buyres.append(code)
         elif (direction < 0 and sig == 3):
             sellres.append(code)
