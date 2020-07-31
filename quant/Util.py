@@ -1776,7 +1776,12 @@ def trendWeekMinv2(sample,short=5, long=10, freq='15min'):
 
     return sample
 
-def trendWeekMinv3(sample,short=5, long=10, freq='15min'):
+def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
+    #test summary
+    #5-10 with 21/10
+    #5-15 with 23/10
+    #5-20 with 19/10
+    #20-60 24/10
     #to get Week and 60 minutes syntony together
     #get week trend
     #A50 64% 30 5 15 12/10
@@ -1956,7 +1961,7 @@ def backtestv2():
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    data = loadLocalData(cl, '2019-01-01', endtime)
+    data = loadLocalData(codelist, '2019-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
