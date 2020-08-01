@@ -12,6 +12,7 @@ except AssertionError:
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import core.Util as util
 import abupy
 from abupy import ABuRegUtil
 from concurrent.futures import ThreadPoolExecutor
@@ -1793,6 +1794,7 @@ def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
     print('*'*100)
 
     sample.fillna(method='ffill',inplace=True)
+    #sample = util.divergence(sample)
     wstart = '2010-01-01'
     code = sample.index.get_level_values('code')[-1]
     wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
@@ -1829,6 +1831,7 @@ def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
         # here use index to get value interested, here we take change of MACDBlock to get the short trend in week level
         direction = wd.loc[windex].CS
         trendv = wd.loc[windex].SM
+        #dd = sample.CS[i]
         temp = ms[ms.index.get_level_values(index).strftime(dayformate) == sample.index.get_level_values(dayindex)[i].strftime(dayformate)][:anchor]
         tmp = ms[ms.index.get_level_values(index).strftime(dayformate) == sample.index.get_level_values(dayindex)[i-1].strftime(dayformate)][anchor:]
         sing = temp.single.sum()+tmp.single.sum()
