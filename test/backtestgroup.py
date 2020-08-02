@@ -1454,16 +1454,18 @@ def backtest602060(holdingperc = 3):
 
 
 def main():
+    '''
     print('*'*300)
     print('15510')
     backtest15510()
+    '''
     print('*'*300)
     print('15515')
     backtest15515()
     print('*'*300)
     print('152060')
     backtest152060()
-
+    '''
     print('*' * 300)
     print('60510')
     backtest60510()
@@ -1473,6 +1475,7 @@ def main():
     print('*' * 300)
     print('602060')
     backtest602060()
+    '''
 
 if __name__=="__main__":
     main()
