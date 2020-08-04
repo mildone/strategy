@@ -46,13 +46,15 @@ def loadLocalData(stocks, start_date='2020-01-02', end='cur'):
     data = QA.QA_fetch_stock_day_adv(stocks, start_date, et)
     return data
 
-def change(dd):
+def change(dd,short=20,mid=60,long=120):
     from functools import reduce
     pp_array = [float(close) for close in dd.close]
     temp_array = [(price1, price2) for price1, price2 in zip(pp_array[:-1], pp_array[1:])]
     change = list(map(lambda pp: reduce(lambda a, b: round((b - a) / a, 3), pp), temp_array))
     change.insert(0, 0)
     dd['change']=change
+    dd['short']=QA.EMA(dd.close,short)
+    dd['CS']=(dd.close-dd.short)*100/dd.short
     return dd
 
 
@@ -94,7 +96,7 @@ def analysis():
             daily_ind = ind.loc[item.index]
             num += 1
             # print('{} at {} with {} and {}'.format(item.code[0], item.date[0], item.close[0], daily_ind.change.iloc[0]))
-            if (daily_ind.change.iloc[0] > 0):
+            if (daily_ind.CS.iloc[0] > 0):
                 win += 1
         print('{} with {}'.format(item.date[0], win / num))
         df.loc[item.date[0]] = win / num
@@ -105,6 +107,7 @@ def analysis():
 
 
 if __name__ == '__main__':
+    analysis()
     m = pd.read_csv('/media/sf_strategy/monitor/marketwidth.csv')
     m.set_index('date',inplace=True)
     N = m.shape[0]
