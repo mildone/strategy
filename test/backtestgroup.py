@@ -1711,8 +1711,12 @@ def main():
     print('*'*300)
     print('152060')
     backtest152060()
+<<<<<<< HEAD
 
     
+=======
+    '''
+>>>>>>> ea4554520a82a97f0fa26455ef307947372257bd
     print('*' * 300)
     print('60510')
     backtest60510()
@@ -1723,5 +1727,9 @@ def main():
     print('602060')
     backtest602060()
     '''
+<<<<<<< HEAD
+=======
+
+>>>>>>> ea4554520a82a97f0fa26455ef307947372257bd
 if __name__=="__main__":
     main()
