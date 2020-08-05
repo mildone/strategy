@@ -17,7 +17,8 @@ def getStocklist():
     QA.QA_util_log_info('GET STOCK LIST')
     stocks=getStocklist()
     """
-    data=QA.QAFetch.QATdx.QA_fetch_get_stock_list('stock')
+    #data=QA.QAFetch.QATdx.QA_fetch_get_stock_list('stock')
+    data = QA.QA_fetch_stock_list()
     stocklist=data.index.get_level_values('code').to_list()
     return stocklist
 
@@ -58,7 +59,7 @@ def change(dd,short=20,mid=60,long=120):
     return dd
 
 
-def analysis():
+def analysis(df, st='2020-01-01',end='cur'):
 
     '''
     if(os.path.exists('stock.npy')):
@@ -69,6 +70,21 @@ def analysis():
         stock = getStocklist()
         np.save('stock.npy',stock)
     '''
+
+    if (end == 'cur'):
+        cur = datetime.datetime.now()
+        mon = str(cur.month)
+        day = str(cur.day)
+        if (re.match('[0-9]{1}', mon) and len(mon) == 1):
+            mon = '0' + mon
+        if (re.match('[0-9]{1}', day) and len(day) == 1):
+            day = '0' + day
+
+        et = str(cur.year) + '-' + mon + '-' + day
+    else:
+        et = end
+
+
     stock = getStocklist()
 
     codelist3 = QA.QA_fetch_stock_block_adv().get_block('云计算').code[:]
@@ -83,12 +99,13 @@ def analysis():
     num = 0
     win = 0
     ind = m.add_func(change)
-    st = '2020-01-01'
-    data_forbacktest = m.select_time(st, '2020-07-15')
+    #st = '2020-01-01'
+    data_forbacktest = m.select_time(st, et)
 
-    start = {'date': [st], 'value': [0]}
-    df = pd.DataFrame(start)
-    df.set_index('date', inplace=True)
+    #start = {'date': [st], 'value': [0]}
+    #df = pd.DataFrame(start)
+    #df.set_index('date', inplace=True)
+    candidate = df.index.get_level_values('date').to_list()
     for items in data_forbacktest.panel_gen:
         num = 0
         win = 0
@@ -99,17 +116,34 @@ def analysis():
             if (daily_ind.CS.iloc[0] > 0):
                 win += 1
         print('{} with {}'.format(item.date[0], win / num))
-        df.loc[item.date[0]] = win / num
+        if(str(item.date[0])  not in candidate):
+            print('adding '+str(item.date[0]))
+            df.loc[item.date[0]] = win / num
+        else:
+            pass
         # print('------' + str(items.date[0]) + '------' + str(win) + '/' + str(num))
-
-    df.to_csv('marketwidth.csv')
+    return df
+    #df.to_csv('marketwidth.csv')
 
 
 
 if __name__ == '__main__':
-    analysis()
-    m = pd.read_csv('/media/sf_strategy/monitor/marketwidth.csv')
-    m.set_index('date',inplace=True)
+    #analysis()
+    if(os.path.exists('/media/sf_strategy/monitor/marketwidth.csv')):
+
+        m = pd.read_csv('/media/sf_strategy/monitor/marketwidth.csv')
+        m.set_index('date',inplace=True)
+    #this is to reload data on top
+        stime = m.index.get_level_values('date')[-21]
+    else:
+        stime = '2020-01-01'
+        start = {'date': [stime], 'value': [0]}
+        m = pd.DataFrame(start)
+        m.set_index('date', inplace=True)
+    df = analysis(m,st=stime,end='cur')
+    df.to_csv('marketwidth.csv')
+
+    '''
     N = m.shape[0]
     ind = np.arange(N)
 
@@ -130,7 +164,7 @@ if __name__ == '__main__':
 
     fig.autofmt_xdate()
     plt.show()
-
+    '''
 
 
 
