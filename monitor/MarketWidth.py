@@ -129,9 +129,21 @@ def analysis(df, st='2020-01-01',end='cur'):
     return df
     #df.to_csv('marketwidth.csv')
 
-def contextPlot(df):
+def contextPlot(df,start='2020-01-01',end='cur'):
     import core.Util as ut
-    sample = QA.QA_fetch_stock_day_adv('000977','2020-01-01','2020-07-28').data
+    if (end == 'cur'):
+        cur = datetime.datetime.now()
+        mon = str(cur.month)
+        day = str(cur.day)
+        if (re.match('[0-9]{1}', mon) and len(mon) == 1):
+            mon = '0' + mon
+        if (re.match('[0-9]{1}', day) and len(day) == 1):
+            day = '0' + day
+
+        et = str(cur.year) + '-' + mon + '-' + day
+    else:
+        et = end
+    sample = QA.QA_fetch_stock_day_adv('000977',start,et).data
     quots = ut.candlestruct(sample)
 
     N = df.shape[0]
@@ -181,8 +193,8 @@ def updateRecord(df):
 
 if __name__ == '__main__':
     #analysis()
-    if(os.path.exists('/media/sf_strategy/monitor/marketwidth.csv')):
-        m = pd.read_csv('/media/sf_strategy/monitor/marketwidth.csv')
+    if(os.path.exists('./marketwidth.csv')):
+        m = pd.read_csv('./marketwidth.csv')
         m.set_index('date',inplace=True)
     #this is to reload data on top
         stime = m.index.get_level_values('date')[-21]
