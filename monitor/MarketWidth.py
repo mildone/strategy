@@ -8,7 +8,11 @@ import numpy as np
 import pandas as pd
 
 import matplotlib.pyplot as plt
+#import matplotlib.ticker as mtk
 import matplotlib.ticker as mtk
+import mpl_finance as mpf
+
+
 
 def getStocklist():
     """
@@ -140,11 +144,15 @@ if __name__ == '__main__':
         start = {'date': [stime], 'value': [0]}
         m = pd.DataFrame(start)
         m.set_index('date', inplace=True)
-    df = analysis(m,st=stime,end='cur')
-    df.to_csv('marketwidth.csv')
+    #df = analysis(m,st=stime,end='cur')
+    #df.to_csv('marketwidth.csv')
+    df = m
 
-    '''
-    N = m.shape[0]
+    import core.Util as ut
+    sample = QA.QA_fetch_stock_day_adv('000977','2020-01-01','2020-07-28').data
+    quots = ut.candlestruct(sample)
+
+    N = df.shape[0]
     ind = np.arange(N)
 
 
@@ -156,15 +164,36 @@ if __name__ == '__main__':
     fig = plt.figure()
     #gs = gridspec.GridSpec(3, 1)
     fig.set_size_inches(30.5, 20.5)
-    ax2 = fig.add_subplot(1,1,1)
+
+
+
+    ax3 = fig.add_subplot(2, 1, 2)
+    ax3.set_title("candlestick", fontsize='xx-large', fontweight='bold')
+
+    mpf.candlestick_ochl(ax3, quots, width=0.6, colorup='r', colordown='g', alpha=1.0)
+
+    '''
+    for i in range(N):
+        if (day.single[i] == 1):
+            ax2.axvline(x=i, ls='--', color='red')
+        if (day.single[i] == 3):
+            ax2.axvline(x=i, ls='--', color='green')
+    '''
+    ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
+    ax3.grid(True)
+    ax3.legend(loc='best')
+    fig.autofmt_xdate()
+
+    ax2 = fig.add_subplot(2, 1, 1,sharex=ax3)
     # ax3.set_title("Divergence", fontsize='xx-large', fontweight='bold')
-    ax2.plot(ind, m.value,'r-',linewidth=1)
+    ax2.plot(ind, m.value, 'r-', linewidth=1)
     ax2.grid(True)
     ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
 
     fig.autofmt_xdate()
+
     plt.show()
-    '''
+
 
 
 
