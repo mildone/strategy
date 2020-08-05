@@ -3,6 +3,7 @@ import smtplib
 from email.mime.text import MIMEText
 import QUANTAXIS as QA
 import dateutil
+import sys
 
 try:
     assert QA.__version__ >= '1.1.0'
@@ -85,7 +86,7 @@ def trendWeekMinv152060(sample,short=20, long=60, freq='15min'):
     #60 76, 30 79, 30 74 more
     #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
     import quant.weekTrend as wt
-    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('{} deal with {}'.format(sys._getframe().f_code.co_name, sample.index.get_level_values('code')[-1]))
     print('*'*100)
 
     sample.fillna(method='ffill',inplace=True)
@@ -146,7 +147,7 @@ def trendWeekMinv152060(sample,short=20, long=60, freq='15min'):
 
     return sample
 
-def backtest152060(holdingperc = 3):
+def backtest152060( holdingperc = 3):
     #holdingperc = 3
     safeholding = 500
     print('*' * 100)
@@ -188,6 +189,7 @@ def backtest152060(holdingperc = 3):
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
+    c1 = ['000977', '600745']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(codelist, '2018-01-01', endtime)
@@ -295,11 +297,11 @@ def backtest152060(holdingperc = 3):
         Account.settle()
 
     print('*' * 100)
-    print('analyse account profit')
+    print('analyse account profit for ' +sys._getframe().f_code.co_name)
     Risk = QA.QA_Risk(Account)
     Risk.assets.plot()
-    print(Risk.profit_construct)
-    print('winning ratio is {}'.format(winRatio(Account)))
+    print('{} with risk {} '.format( sys._getframe().f_code.co_name,Risk.profit_construct))
+    print(' 152060 winning ratio is {}'.format( winRatio(Account)))
 
 
 
@@ -317,7 +319,7 @@ def trendWeekMinv15515(sample,short=5, long=15, freq='15min'):
     #60 76, 30 79, 30 74 more
     #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
     import quant.weekTrend as wt
-    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('{} deal with {}'.format(sys._getframe().f_code.co_name,sample.index.get_level_values('code')[-1]))
     print('*'*100)
 
     sample.fillna(method='ffill',inplace=True)
@@ -420,6 +422,7 @@ def backtest15515(holdingperc = 3):
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
+    c1 = ['000977','600745']
     codelist3.extend(cl)
     codelist = list(set(codelist3))
     # data = loadLocalData(codelist, '2018-01-01', endtime)
@@ -527,11 +530,11 @@ def backtest15515(holdingperc = 3):
         Account.settle()
 
     print('*' * 100)
-    print('analyse account profit')
+    print('analyse account profit for ' +sys._getframe().f_code.co_name)
     Risk = QA.QA_Risk(Account)
     Risk.assets.plot()
-    print(Risk.profit_construct)
-    print('winning ratio is {}'.format(winRatio(Account)))
+    print('{} with risk {} '.format( sys._getframe().f_code.co_name,Risk.profit_construct))
+    print('{} winning ratio is {}'.format(sys._getframe().f_code.co_name,winRatio(Account)))
 
 
 def trendWeekMinv15510(sample,short=5, long=10, freq='15min'):
@@ -547,7 +550,7 @@ def trendWeekMinv15510(sample,short=5, long=10, freq='15min'):
     #60 76, 30 79, 30 74 more
     #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
     import quant.weekTrend as wt
-    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('{} deal with {}'.format(sys._getframe().f_code.co_name,sample.index.get_level_values('code')[-1]))
     print('*'*100)
 
     sample.fillna(method='ffill',inplace=True)
@@ -652,8 +655,8 @@ def backtest15510(holdingperc = 3):
           '000333','600031','002384','002241','600703','000776','600897','600085']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
-    # data = loadLocalData(codelist, '2018-01-01', endtime)
-    data = loadLocalData(codelist, '2018-01-01', endtime)
+    # data = loadLocalData(cl, '2018-01-01', endtime)
+    data = loadLocalData(cl, '2018-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -757,10 +760,10 @@ def backtest15510(holdingperc = 3):
         Account.settle()
 
     print('*' * 100)
-    print('analyse account profit')
+    print('analyse account profit for ' +sys._getframe().f_code.co_name)
     Risk = QA.QA_Risk(Account)
     Risk.assets.plot()
-    print(Risk.profit_construct)
+    print('{} with risk {} '.format(sys._getframe().f_code.co_name,Risk.profit_construct))
     print('winning ratio is {}'.format(winRatio(Account)))
 
 
@@ -779,7 +782,7 @@ def trendWeekMinv15520(sample,short=5, long=20, freq='15min'):
     #60 76, 30 79, 30 74 more
     #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
     import quant.weekTrend as wt
-    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('{} deal with {}'.format(sys._getframe().f_code.co_name,sample.index.get_level_values('code')[-1]))
     print('*'*100)
 
     sample.fillna(method='ffill',inplace=True)
@@ -884,7 +887,7 @@ def backtest15520(holdingperc = 3):
           '000333','600031','002384','002241','600703','000776','600897','600085']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
-    # data = loadLocalData(codelist, '2018-01-01', endtime)
+    # data = loadLocalData(cl, '2018-01-01', endtime)
     data = loadLocalData(cl, '2019-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
@@ -989,10 +992,10 @@ def backtest15520(holdingperc = 3):
         Account.settle()
 
     print('*' * 100)
-    print('analyse account profit')
+    print('analyse account profit for ' +sys._getframe().f_code.co_name)
     Risk = QA.QA_Risk(Account)
     Risk.assets.plot()
-    print(Risk.profit_construct)
+    print('{} with risk {} '.format( sys._getframe().f_code.co_name,Risk.profit_construct))
     print('winning ratio is {}'.format(winRatio(Account)))
 
 
@@ -1017,7 +1020,7 @@ def trendWeekMinv60510(sample,short=5, long=10, freq='60min'):
     #60 76, 30 79, 30 74 more
     #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
     import quant.weekTrend as wt
-    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('{} deal with {}'.format(sys._getframe().f_code.co_name,sample.index.get_level_values('code')[-1]))
     print('*'*100)
 
     sample.fillna(method='ffill',inplace=True)
@@ -1122,8 +1125,8 @@ def backtest60510(holdingperc = 3):
           '000333','600031','002384','002241','600703','000776','600897','600085']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
-    # data = loadLocalData(codelist, '2018-01-01', endtime)
-    data = loadLocalData(codelist, '2018-01-01', endtime)
+    # data = loadLocalData(cl, '2018-01-01', endtime)
+    data = loadLocalData(cl, '2018-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -1227,10 +1230,10 @@ def backtest60510(holdingperc = 3):
         Account.settle()
 
     print('*' * 100)
-    print('analyse account profit')
+    print('analyse account profit for ' +sys._getframe().f_code.co_name)
     Risk = QA.QA_Risk(Account)
     Risk.assets.plot()
-    print(Risk.profit_construct)
+    print('{} with risk {} '.format( sys._getframe().f_code.co_name,Risk.profit_construct))
     print('winning ratio is {}'.format(winRatio(Account)))
 
 
@@ -1247,7 +1250,7 @@ def trendWeekMinv60515(sample,short=5, long=15, freq='60min'):
     #60 76, 30 79, 30 74 more
     #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
     import quant.weekTrend as wt
-    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('{} deal with {}'.format(sys._getframe().f_code.co_name,sample.index.get_level_values('code')[-1]))
     print('*'*100)
 
     sample.fillna(method='ffill',inplace=True)
@@ -1352,8 +1355,8 @@ def backtest60515(holdingperc = 3):
           '000333','600031','002384','002241','600703','000776','600897','600085']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
-    # data = loadLocalData(codelist, '2018-01-01', endtime)
-    data = loadLocalData(codelist, '2018-01-01', endtime)
+    # data = loadLocalData(cl, '2018-01-01', endtime)
+    data = loadLocalData(cl, '2018-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -1457,10 +1460,10 @@ def backtest60515(holdingperc = 3):
         Account.settle()
 
     print('*' * 100)
-    print('analyse account profit')
+    print('analyse account profit for ' +sys._getframe().f_code.co_name)
     Risk = QA.QA_Risk(Account)
     Risk.assets.plot()
-    print(Risk.profit_construct)
+    print('{} with risk {} '.format( sys._getframe().f_code.co_name,Risk.profit_construct))
     print('winning ratio is {}'.format(winRatio(Account)))
 
 def trendWeekMinv602060(sample,short=20, long=60, freq='60min'):
@@ -1476,7 +1479,7 @@ def trendWeekMinv602060(sample,short=20, long=60, freq='60min'):
     #60 76, 30 79, 30 74 more
     #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
     import quant.weekTrend as wt
-    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('{} deal with {}'.format(sys._getframe().f_code.co_name,sample.index.get_level_values('code')[-1]))
     print('*'*100)
 
     sample.fillna(method='ffill',inplace=True)
@@ -1581,8 +1584,8 @@ def backtest602060(holdingperc = 3):
           '000333','600031','002384','002241','600703','000776','600897','600085']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
-    # data = loadLocalData(codelist, '2018-01-01', endtime)
-    data = loadLocalData(codelist, '2018-01-01', endtime)
+    # data = loadLocalData(cl, '2018-01-01', endtime)
+    data = loadLocalData(cl, '2018-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -1686,10 +1689,10 @@ def backtest602060(holdingperc = 3):
         Account.settle()
 
     print('*' * 100)
-    print('analyse account profit')
+    print('analyse account profit for ' +sys._getframe().f_code.co_name)
     Risk = QA.QA_Risk(Account)
     Risk.assets.plot()
-    print(Risk.profit_construct)
+    print('{} with risk {} '.format( sys._getframe().f_code.co_name,Risk.profit_construct))
     print('winning ratio is {}'.format(winRatio(Account)))
 
 
@@ -1699,10 +1702,37 @@ def main():
     print('15510')
     backtest15510()
     '''
+    import multiprocessing
+    processList=[]
+    tmp1 = multiprocessing.Process(target=backtest15515,args=())
+    processList.append(tmp1)
+
+    tmp2 = multiprocessing.Process(target=backtest152060,args=())
+    processList.append(tmp2)
+
+    tmp3 = multiprocessing.Process(target=backtest15510, args=())
+    processList.append(tmp3)
+
+    tmp4 = multiprocessing.Process(target=backtest60510, args=())
+    processList.append(tmp4)
+
+    tmp5 = multiprocessing.Process(target=backtest60515, args=())
+    processList.append(tmp5)
+
+    tmp6 = multiprocessing.Process(target=backtest602060, args=())
+    processList.append(tmp6)
+
+
+    for process in processList:
+        process.start()
+    for process in processList:
+        process.join()
+
+    '''
     print('*'*300)
     print('15515')
     backtest15515()
-    '''
+    
     print('*' * 300)
     print('15520')
     backtest15520()
@@ -1724,4 +1754,6 @@ def main():
     '''
 
 if __name__=="__main__":
+    import warnings
+    warnings.filterwarnings('ignore')
     main()

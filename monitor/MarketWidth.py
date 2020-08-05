@@ -129,25 +129,7 @@ def analysis(df, st='2020-01-01',end='cur'):
     return df
     #df.to_csv('marketwidth.csv')
 
-
-
-if __name__ == '__main__':
-    #analysis()
-    if(os.path.exists('/media/sf_strategy/monitor/marketwidth.csv')):
-
-        m = pd.read_csv('/media/sf_strategy/monitor/marketwidth.csv')
-        m.set_index('date',inplace=True)
-    #this is to reload data on top
-        stime = m.index.get_level_values('date')[-21]
-    else:
-        stime = '2020-01-01'
-        start = {'date': [stime], 'value': [0]}
-        m = pd.DataFrame(start)
-        m.set_index('date', inplace=True)
-    #df = analysis(m,st=stime,end='cur')
-    #df.to_csv('marketwidth.csv')
-    df = m
-
+def contextPlot(df):
     import core.Util as ut
     sample = QA.QA_fetch_stock_day_adv('000977','2020-01-01','2020-07-28').data
     quots = ut.candlestruct(sample)
@@ -193,6 +175,28 @@ if __name__ == '__main__':
     fig.autofmt_xdate()
 
     plt.show()
+
+def updateRecord(df):
+    df.to_csv('marketwidth.csv')
+
+if __name__ == '__main__':
+    #analysis()
+    if(os.path.exists('/media/sf_strategy/monitor/marketwidth.csv')):
+        m = pd.read_csv('/media/sf_strategy/monitor/marketwidth.csv')
+        m.set_index('date',inplace=True)
+    #this is to reload data on top
+        stime = m.index.get_level_values('date')[-21]
+    else:
+        stime = '2020-01-01'
+        start = {'date': [stime], 'value': [0]}
+        m = pd.DataFrame(start)
+        m.set_index('date', inplace=True)
+    df = analysis(m,st=stime,end='cur')
+    contextPlot(df)
+    updateRecord(df)
+
+
+
 
 
 
