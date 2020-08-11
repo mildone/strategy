@@ -67,6 +67,7 @@ def TrendDetect(sample,short=5,mid=10,long=15):
     sample['CS'] = (sample.close - sample.short) * 100 / sample.short
     sample['SM'] = (sample.short - sample.mid) * 100 / sample.mid
     sample['ML'] = (sample.mid - sample.long) * 100 / sample.long
+    sample['BIAS'] =(sample.close-sample.long) * 100/ sample.long
     return sample
 
 

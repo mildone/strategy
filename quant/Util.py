@@ -1231,7 +1231,19 @@ def SellAnalysis(df,period=5):
     return df
     #df['vr'] = (df.volume - df.EMAVolume)/df.EMAVolume
 
+def EMA_MAV3(sample,period=20):
+    sample['MA'] = QA.MA(sample.close, period)
+    sample['EMA'] = QA.EMA(sample.close, period)
 
+    CROSS_5 = QA.CROSS(sample.EMA, sample.MA)
+    CROSS_15 = QA.CROSS(sample.MA, sample.EMA)
+
+    C15 = np.where(CROSS_15 == 1, 3, 0)
+    m = np.where(CROSS_5 == 1, 1, C15)
+    single = m[:-1].tolist()
+    single.insert(0, 0)
+    sample['single'] = single
+    return sample
 
 
 def triNetv6(sample,short=5, long=10, freq='15min'):
@@ -1777,18 +1789,20 @@ def trendWeekMinv2(sample,short=5, long=10, freq='15min'):
 
     return sample
 
-def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
-    #test summary
-    #5-10 with 21/10
-    #5-15 with 23/10
-    #5-20 with 19/10
-    #20-60 24/10
-    #to get Week and 60 minutes syntony together
-    #get week trend
-    #A50 64% 30 5 15 12/10
-    #
-    #60 76, 30 79, 30 74 more
-    #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
+def DTWM(sample,short=20,long=60,freq='15min'):
+    sample['MA'] = QA.MA(sample.close, short)
+    sample['EMA'] = QA.EMA(sample.close, short)
+
+    CROSS_5d = QA.CROSS(sample.EMA, sample.MA)
+    CROSS_15d = QA.CROSS(sample.MA, sample.EMA)
+
+    C15d = np.where(CROSS_15d == 1, 3, 0)
+    md = np.where(CROSS_5d == 1, 1, C15d)
+    singled = md[:-1].tolist()
+    singled.insert(0, 0)
+    sample['ds'] = singled
+
+
     import quant.weekTrend as wt
     print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
     print('*'*100)
@@ -1836,6 +1850,87 @@ def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
         tmp = ms[ms.index.get_level_values(index).strftime(dayformate) == sample.index.get_level_values(dayindex)[i-1].strftime(dayformate)][anchor:]
         sing = temp.single.sum()+tmp.single.sum()
         if(direction>0 and trendv >0 and sing==1):
+            sig.append(1)
+        elif(direction<0 and sing==3):
+            sig.append(sing)
+        else:
+            sig.append(0)
+
+    try:
+        #sample['single'] = [0]+sig[:-1]
+        sample['single']=sig
+
+    except:
+        print('error with {}'.format(sample.index.get_level_values('code')[0]))
+        sample['single'] = 0
+
+
+    return sample
+
+
+def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
+    #test summary
+    #5-10 with 21/10
+    #5-15 with 23/10
+    #5-20 with 19/10
+    #20-60 24/10
+    #to get Week and 60 minutes syntony together
+    #get week trend
+    #A50 64% 30 5 15 12/10
+    #
+    #60 76, 30 79, 30 74 more
+    #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
+    import quant.weekTrend as wt
+    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('*'*100)
+
+    sample.fillna(method='ffill',inplace=True)
+    #sample = util.divergence(sample)
+
+
+    wstart = '2010-01-01'
+    code = sample.index.get_level_values('code')[-1]
+    wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    temp = QA.QA_fetch_stock_day_adv(code,wstart,wend).data
+    wd = wt.wds(temp)
+    wd = wt.TrendDetect(wd)
+    bechmark = wd.BIAS.max() * 0.97
+
+    start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
+    end = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    mindata = QA.QA_fetch_stock_min_adv(sample.index.get_level_values('code')[0], start, end, frequence= freq)
+    ms = mindata.data
+    # print(sample)
+    ms['short'] = QA.EMA(ms.close, short)
+    ms['long'] = QA.EMA(ms.close, long)
+    CROSS_5 = QA.CROSS(ms.short, ms.long)
+    CROSS_15 = QA.CROSS(ms.long, ms.short)
+
+    C15 = np.where(CROSS_15 == 1, 3, 0)
+    m = np.where(CROSS_5 == 1, 1, C15)
+    # single = m[:-1].tolist()
+    # single.insert(0, 0)
+    ms['single'] = m.tolist()
+    sig = [0]
+    if(freq=='60min'):
+        anchor = -2
+    elif(freq=='30min'):
+        anchor = -4
+    elif(freq=='15min'):
+        anchor = -8
+    for i in range(1, len(sample)):
+        dtime = sample.index.get_level_values(dayindex)[i]
+        wtime = getWeekDate(dtime)
+        windex = wd[wd.date == wtime.strftime(dayformate)].index[0]
+        # here use index to get value interested, here we take change of MACDBlock to get the short trend in week level
+        direction = wd.loc[windex].CS
+        trendv = wd.loc[windex].SM
+        #dd = sample.CS[i]
+        temp = ms[ms.index.get_level_values(index).strftime(dayformate) == sample.index.get_level_values(dayindex)[i].strftime(dayformate)][:anchor]
+        tmp = ms[ms.index.get_level_values(index).strftime(dayformate) == sample.index.get_level_values(dayindex)[i-1].strftime(dayformate)][anchor:]
+        sing = temp.single.sum()+tmp.single.sum()
+        #
+        if(direction>0 and trendv >0 and sing==1 and wd.loc[windex].BIAS<bechmark ):
             sig.append(1)
         elif(direction<0 and sing==3):
             sig.append(sing)
@@ -1964,7 +2059,7 @@ def backtestv2(holdingperc = 3):
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    data = loadLocalData(cl, '2019-01-01', endtime)
+    data = loadLocalData(codelist, '2019-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -1987,6 +2082,11 @@ def backtestv2(holdingperc = 3):
     #18/10,currently this is job50 taking now
     #ind = data.add_func(trendWeekMinv2)
     #21/10
+
+
+
+
+    #ind = data.add_func(DTWM)
     ind = data.add_func(trendWeekMinv3)
 
     #7/10
@@ -2074,6 +2174,171 @@ def backtestv2(holdingperc = 3):
     print(Risk.profit_construct)
     print('winning ratio is {}'.format(winRatio(Account)))
 
+
+
+def backtestv3(holdingperc = 3):
+    #holdingperc = 3
+    safeholding = 500
+    print('*' * 100)
+    print('loading data')
+    # stockes = getStocklist()
+    # stockes = ['600797','000977']
+    # data = loadLocalData(stockes,'2018-03-15',end_date = '2019-09-11')
+    print('*' * 100)
+    print('init account')
+    Account = QA.QA_Account(user_cookie='eric', portfolio_cookie='eric')
+    Broker = QA.QA_BacktestBroker()
+    Account.reset_assets(100000)
+    Account.account_cookie = 'ECAP'
+    # codelist=['600797','000977','601068','601069','000977']
+    # 云计算，华为，5G概念
+    codelist3 = QA.QA_fetch_stock_block_adv().get_block('云计算').code[:]
+    codelist1 = QA.QA_fetch_stock_block_adv().get_block('华为概念').code[:]
+    codelist2 = QA.QA_fetch_stock_block_adv().get_block('5G概念').code[:]
+    # codelist4 = QA.QA_fetch_stock_block_adv().get_block('国产软件').code[:]
+    codelist2.extend(codelist3)
+    codelist2.extend(codelist1)
+
+    #
+    clist3 = QA.QA_fetch_stock_block_adv().get_block('阿里概念').code[:]
+    clist1 = QA.QA_fetch_stock_block_adv().get_block('腾讯概念').code[:]
+    clist2 = QA.QA_fetch_stock_block_adv().get_block('小米概念').code[:]
+    # codelist4 = QA.QA_fetch_stock_block_adv().get_block('国产软件').code[:]
+    clist3.extend(clist2)
+    clist3.extend(clist1)
+
+    # codelist1.extend(codelist4)
+
+
+
+    cur = datetime.datetime.now()
+    # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
+    #endtime = '2020-06-01'
+    endtime = '2020-01-20'
+    cl = ['000977', '600745','002889','600340','000895','600019','600028',
+          '601857','600585','002415','002475','600031','600276','600009','601318',
+          '000333','600031','002384','002241','600703','000776','600897','600085']
+    codelist2.extend(cl)
+    codelist = list(set(codelist2))
+    # data = loadLocalData(cl, '2019-01-01', endtime)
+    data = loadLocalData(cl, '2019-01-01', endtime)
+    data = data.to_qfq()
+    print('*' * 100)
+    print('prepare data for back test')
+    #no qfq, 15/10, with qfq,
+    #ind = data.add_func(trendSingleNew)
+    # around 1/6
+    #ind = data.add_func(trendTurn)
+    # 1.7/6
+    #ind = data.add_func(doubleAvgDay)
+    # wired with sudden draw back
+    #ind = data.add_func(trendBreak)
+    #with cl only 7/10
+    #with codelist
+    #ind = data.add_func(doubleAvgminv2)
+    #45/10 with a50, that's -1
+    #ind = data.add_func(doubleAvgmin)
+    #triNetV2 a50 10/10
+    #ind = data.add_func(triNetv2)
+
+    #18/10,currently this is job50 taking now
+    #ind = data.add_func(trendWeekMinv2)
+    #21/10
+
+
+
+
+    ind = data.add_func(DTWM)
+    #ind = data.add_func(trendWeekMinv3)
+
+    #7/10
+    #ind = data.add_func(EMA_MA)
+
+
+    #6/10
+    #ind = data.add_func(TrendFinder)
+
+    #ind = data.add_func(bollStrategy)
+    # ind = data.add_func(nineTurn)
+    #ind=data.add_func(MACACalculate)
+    #ind = data.add_func(EMAOP)
+    # cur = datetime.datetime.now()
+    # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
+    data_forbacktest = data.select_time('2019-01-01', endtime)
+    deal = {}
+    for items in data_forbacktest.panel_gen:
+        for item in items.security_gen:
+
+            daily_ind = ind.loc[item.index]
+            if (daily_ind.single.iloc[0] == 1 or daily_ind.ds.iloc[0]==1):
+                open = QA.QA_fetch_stock_day_adv(item.code[0], item.date[0], item.date[0]).data.open[0] if np.isnan(
+                    item.open[0]) else item.open[0]
+                if ((Account.cash_available - safeholding) / (holdingperc * item.close[0]) > 500):
+                    print('code {}, time {} amout {}, toward {}, price {} order_model {} amount_model {}'.format(
+                        item.code[0], item.date[0], int((Account.cash_available - safeholding) / (100 * open)) * 100,
+                        QA.ORDER_DIRECTION.BUY, open, QA.ORDER_MODEL.LIMIT, QA.AMOUNT_MODEL.BY_AMOUNT))
+                    order = Account.send_order(
+                        code=item.code[0],
+                        time=item.date[0],
+                        amount=int((Account.cash_available - safeholding) / (holdingperc * item.open[0] *100))*100,
+                        towards=QA.ORDER_DIRECTION.BUY,
+                        price=item.close[0],
+                        order_model=QA.ORDER_MODEL.LIMIT,
+                        amount_model=QA.AMOUNT_MODEL.BY_AMOUNT
+                    )
+                    #deal[item.code[0]]= int((Account.cash_available - safeholding) / (holdingperc * open*100))*100
+
+
+
+                else:
+                    order = None
+                #start to trade
+                if order:
+                    # print('sending order '+'*'*60)
+                    Broker.receive_order(QA.QA_Event(order=order, market_data=item))
+                    #print('got here --------------------')
+                    trade_mes = Broker.query_orders(Account.account_cookie, 'filled')
+                    #print(trade_mes)
+                   # print('got here 2 -------')
+                    res = trade_mes.loc[order.account_cookie, order.realorder_id]
+                    #print('got here 3 -------- ')
+                    order.trade(res.trade_id, res.trade_price, res.trade_amount, res.trade_time)
+                   #print('*' * 100)
+                    print(str(item.date[0]) + " buy " + item.code[0])
+
+            elif (daily_ind.single.iloc[0] == 3 or daily_ind.ds.iloc[0]==3):
+                #close = QA.QA_fetch_stock_day_adv(item.code[0], item.date[0], item.date[0]).data.close[0] if np.isnan(
+                    #daily_ind.close.iloc[0]) else item.close[0]
+                if Account.sell_available.get(item.code[0], 0) > 0:
+                    print('>' * 100)
+                    print(str(item.date[0]) + " sell " + item.code[0])
+                    order = Account.send_order(
+                        code=item.code[0],
+                        time=item.date[0],
+                        amount=Account.sell_available.get(item.code[0], 0),
+                        #amount = deal.get(item.code[0]),
+                        towards=QA.ORDER_DIRECTION.SELL,
+                        price=item.close[0],
+                        order_model=QA.ORDER_MODEL.LIMIT,
+                        amount_model=QA.AMOUNT_MODEL.BY_AMOUNT
+                    )
+                    if order:
+                        Broker.receive_order(QA.QA_Event(order=order, market_data=item))
+                        trade_mes = Broker.query_orders(Account.account_cookie, 'filled')
+                        res = trade_mes.loc[order.account_cookie, order.realorder_id]
+                        order.trade(res.trade_id, res.trade_price, res.trade_amount, res.trade_time)
+        Account.settle()
+
+    print('*' * 100)
+    print('analyse account profit')
+    Risk = QA.QA_Risk(Account)
+    Risk.assets.plot()
+    print(Risk.profit_construct)
+    print('winning ratio is {}'.format(winRatio(Account)))
+
+
+
+
 def triNetindexv2(sample,short=5, long=10, freq='15min'):
     #to get Week and 60 minutes syntony together
     #get week trend
@@ -2152,11 +2417,15 @@ def etfverify():
 
 
 def main():
+    '''
     for i in range(2,6):
         print('*'*250)
         print('holdingperc with {} '.format(i))
         backtestv2(i)
         print('*'*200)
+    '''
+
+    backtestv2()
     #test = QA.QA_fetch_stock_day_adv('000977','2018-01-01','2019-01-01').data
     #test['single']=0
     #triNetv3(test)
