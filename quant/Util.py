@@ -1930,7 +1930,7 @@ def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
         tmp = ms[ms.index.get_level_values(index).strftime(dayformate) == sample.index.get_level_values(dayindex)[i-1].strftime(dayformate)][anchor:]
         sing = temp.single.sum()+tmp.single.sum()
         #
-        if(direction>0 and trendv >0 and sing==1 and wd.loc[windex].BIAS<bechmark ):
+        if(direction>0 and trendv >0 and sing==1 and wd.loc[windex].BIAS<bechmark  ):
             sig.append(1)
         elif(direction<0 and sing==3):
             sig.append(sing)
@@ -2052,14 +2052,14 @@ def backtestv2(holdingperc = 3):
     cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
     #endtime = '2020-06-01'
-    endtime = '2020-01-20'
+    endtime = '2020-07-20'
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    data = loadLocalData(codelist, '2019-01-01', endtime)
+    data = loadLocalData(cl, '2019-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')

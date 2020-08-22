@@ -258,18 +258,22 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
 
         ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
         ax2.grid(True)
-        ax2.legend(loc='best')
+        ax2.legend(loc='upper left')
         fig.autofmt_xdate()
 
         ax3 = fig.add_subplot(gs[0:1, 0:1])
         # ax3.set_title("Divergence", fontsize='xx-large', fontweight='bold')
-        ax3.bar(ind, day.BIAS, color='grey', label='BIAS')
+        bar_red = np.where(day.BIAS>0,day.BIAS,0)
+        bar_green = np.where(day.BIAS<=0,day.BIAS,0)
+        ax3.bar(ind, bar_red, color='red', label='BIAS')
+        ax3.bar(ind,bar_green,color='green',label='BIAS')
+
         ax3.plot(ind,day.BMA, 'black')
         ax3.plot(ind, day.CS, 'blue', label='close/sohrt', linewidth=1)
         ax3.plot(ind, day.SM, 'green', label='short/mid', linewidth=1)
         ax3.grid(True)
         ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
-        ax3.legend()
+        ax3.legend(loc='upper left')
         fig.autofmt_xdate()
 
         plt.show()
@@ -280,20 +284,24 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
 
         ax3 = fig.add_subplot(gs[0:1, 0:1])
         #ax3.set_title("Divergence", fontsize='xx-large', fontweight='bold')
-        ax3.bar(ind, day.BIAS, color='blue')
-        ax3.axhline(y=day.BIAS[-1],color='grey',ls='--')
-        ax3.plot(ind, day.CS, 'r-', label='CS', linewidth=1)
+        bar_red = np.where(day.BIAS > 0, day.BIAS, 0)
+        bar_green = np.where(day.BIAS <= 0, day.BIAS, 0)
+
+        #ax3.axhline(y=day.BIAS[-1],color='grey',ls='--')
+        ax3.plot(ind, day.CS, 'grey', label='CS', linewidth=1)
         ax3.plot(ind, day.SM, 'blue', label='SM', linewidth=1)
         ax3.plot(ind, day.ML, color='green', label='ML', linewidth=1)
         if(bias):
-            ax3.bar(ind, day.BIAS, color='grey', label='BIAS')
+            #ax3.bar(ind, day.BIAS, color='grey', label='BIAS')
+            ax3.bar(ind, bar_red, color='red')
+            ax3.bar(ind, bar_green, color='green')
         else:
             ax3.bar(ind, day.CM, color = 'grey', label = 'CLOSE/MID')
 
 
         ax3.grid(True)
         ax3.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
-        ax3.legend()
+        ax3.legend(loc='upper left')
         fig.autofmt_xdate()
 
         ax1 = fig.add_subplot(gs[6:7, 0:1], sharex=ax3)
@@ -308,7 +316,7 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         # ax3.axhline(y=0,ls='--',color='yellow')
         ax1.grid(True)
         ax1.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
-        ax1.legend()
+        ax1.legend(loc='upper left')
         fig.autofmt_xdate()
 
         ax2 = fig.add_subplot(gs[1:6, 0:1], sharex=ax3)
@@ -392,7 +400,7 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
                     ax2.axvline(x=i, ls='--', color='green')
         ax2.xaxis.set_major_formatter(mtk.FuncFormatter(format_date))
         ax2.grid(True)
-        ax2.legend(loc='best')
+        ax2.legend(loc='upper left')
         fig.autofmt_xdate()
 
         plt.show()
@@ -497,6 +505,6 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 
 if __name__ == "__main__":
 
-    forceANA('002415',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
+    forceANA('000977',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
 
 
