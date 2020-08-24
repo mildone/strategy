@@ -2059,7 +2059,7 @@ def backtestv2(holdingperc = 3):
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    data = loadLocalData(cl, '2019-01-01', endtime)
+    data = loadLocalData(cl, '2015-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -2102,7 +2102,7 @@ def backtestv2(holdingperc = 3):
     #ind = data.add_func(EMAOP)
     # cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
-    data_forbacktest = data.select_time('2019-01-01', endtime)
+    data_forbacktest = data.select_time('2015-01-01', endtime)
     deal = {}
     for items in data_forbacktest.panel_gen:
         for item in items.security_gen:
