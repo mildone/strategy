@@ -32,7 +32,7 @@ def weekDF(df):
     weekly_df.reset_index('date',inplace=True)
     return weekly_df
 
-def wds(df):
+def wds(df,period='W'):
     df['date'] = pd.to_datetime(df.index.get_level_values('date'))
     df.set_index("date", inplace=True)
     period = 'W'

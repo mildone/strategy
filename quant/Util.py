@@ -1948,6 +1948,93 @@ def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
 
     return sample
 
+def getMonDate(df,dtime):
+    dic = {'2020-20':'2020-20'}
+    df['date'] = pd.to_datetime(df.index.get_level_values('date'))
+    df.set_index("date", inplace=True)
+    period = 'M'
+    mdf = df.resample(period).last()
+    timelist = list(mdf.index.get_values())
+    for i in timelist:
+        dic[str(i)[:7]] = str(i)[:10]
+
+
+    return dic.get(dtime)
+
+
+def trendMonDay(sample,short=20, long=60):
+    #test summary
+    #5-10 with 21/10
+    #5-15 with 23/10
+    #5-20 with 19/10
+    #20-60 24/10
+    #to get Week and 60 minutes syntony together
+    #get week trend
+    #A50 64% 30 5 15 12/10
+    #
+    #60 76, 30 79, 30 74 more
+    #15 min is the best for now, with 11/10 (5-10 11, 5-15 10 5-20 )
+    import quant.weekTrend as wt
+    print('deal with {}'.format(sample.index.get_level_values('code')[-1]))
+    print('*'*100)
+
+    sample.fillna(method='ffill',inplace=True)
+    #sample = util.divergence(sample)
+
+
+    wstart = '2010-01-01'
+    code = sample.index.get_level_values('code')[-1]
+    wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    temp = QA.QA_fetch_stock_day_adv(code,wstart,wend).data
+    wd = wt.wds(temp,period='M')
+    wd = wt.TrendDetect(wd)
+    bechmark = wd.BIAS.max() * 0.97
+
+    #start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
+    #end = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
+    #mindata = QA.QA_fetch_stock_min_adv(sample.index.get_level_values('code')[0], start, end, frequence= freq)
+    #ms = mindata.data
+    # print(sample)
+    sample['short'] = QA.EMA(sample.close, short)
+    sample['long'] = QA.EMA(sample.close, long)
+    CROSS_5 = QA.CROSS(sample.short, sample.long)
+    CROSS_15 = QA.CROSS(sample.long, sample.short)
+
+    C15 = np.where(CROSS_15 == 1, 3, 0)
+    m = np.where(CROSS_5 == 1, 1, C15)
+    single = m[:-1].tolist()
+    single.insert(0, 0)
+    sample['s1'] = m.tolist()
+    sig=[0]
+    for i in range(1, len(sample)):
+        dtime = sample.index.get_level_values(dayindex)[i].strftime(dayformate)[:7]
+        mtime = getMonDate(sample,dtime)
+        windex = wd[wd.date == mtime.strftime(dayformate)].index[0]
+        # here use index to get value interested, here we take change of MACDBlock to get the short trend in week level
+        direction = wd.loc[windex].CS
+        trendv = wd.loc[windex].SM
+        sing = sample.s1[i]
+
+        #
+        if(direction>0 and trendv >0 and sing==1 and wd.loc[windex].BIAS<bechmark  ):
+            sig.append(1)
+        elif(direction<0 and sing==3):
+            sig.append(sing)
+        else:
+            sig.append(0)
+
+    try:
+        #sample['single'] = [0]+sig[:-1]
+        sample['single']=sig
+
+    except:
+        print('error with {}'.format(sample.index.get_level_values('code')[0]))
+        sample['single'] = 0
+
+
+    return sample
+
+
 
 
 def doubleAvgminv2(dd, short=5, long=15, freq='60min'):
@@ -2087,7 +2174,11 @@ def backtestv2(holdingperc = 3):
 
 
     #ind = data.add_func(DTWM)
-    ind = data.add_func(trendWeekMinv3)
+    #ind = data.add_func(trendWeekMinv3)
+
+
+
+    ind = data.add_func(trendMonDay)
 
     #7/10
     #ind = data.add_func(EMA_MA)
