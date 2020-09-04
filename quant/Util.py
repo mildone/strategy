@@ -2006,17 +2006,19 @@ def trendMonDay(sample,short=20, long=60):
     single.insert(0, 0)
     sample['s1'] = m.tolist()
     sig=[0]
+    temp = sample.copy(deep=True)
     for i in range(1, len(sample)):
         dtime = sample.index.get_level_values(dayindex)[i].strftime(dayformate)[:7]
-        mtime = getMonDate(sample,dtime)
-        windex = wd[wd.date == mtime.strftime(dayformate)].index[0]
+        mtime = getMonDate(temp,dtime)
+        windex = wd[wd.date == mtime].index[0]
+        #print(windex)
         # here use index to get value interested, here we take change of MACDBlock to get the short trend in week level
         direction = wd.loc[windex].CS
         trendv = wd.loc[windex].SM
         sing = sample.s1[i]
 
         #
-        if(direction>0 and trendv >0 and sing==1 and wd.loc[windex].BIAS<bechmark  ):
+        if(direction>0 and trendv >0 and sing==1  ):
             sig.append(1)
         elif(direction<0 and sing==3):
             sig.append(sing)
@@ -2146,7 +2148,8 @@ def backtestv2(holdingperc = 3):
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    data = loadLocalData(cl, '2015-01-01', endtime)
+    test = ['000977']
+    data = loadLocalData(test, '2019-01-01', endtime)
     data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
@@ -2174,11 +2177,11 @@ def backtestv2(holdingperc = 3):
 
 
     #ind = data.add_func(DTWM)
-    #ind = data.add_func(trendWeekMinv3)
+    ind = data.add_func(trendWeekMinv3)
 
 
 
-    ind = data.add_func(trendMonDay)
+    #ind = data.add_func(trendMonDay)
 
     #7/10
     #ind = data.add_func(EMA_MA)
@@ -2193,7 +2196,7 @@ def backtestv2(holdingperc = 3):
     #ind = data.add_func(EMAOP)
     # cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
-    data_forbacktest = data.select_time('2015-01-01', endtime)
+    data_forbacktest = data.select_time('2019-01-01', endtime)
     deal = {}
     for items in data_forbacktest.panel_gen:
         for item in items.security_gen:

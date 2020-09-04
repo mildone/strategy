@@ -35,7 +35,7 @@ def weekDF(df):
 def wds(df,period='W'):
     df['date'] = pd.to_datetime(df.index.get_level_values('date'))
     df.set_index("date", inplace=True)
-    period = 'W'
+    #period = 'W'
 
     weekly_df = df.resample(period).last()
     weekly_df['open'] = df['open'].resample(period).first()
