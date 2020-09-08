@@ -2169,7 +2169,8 @@ def backtestv2(holdingperc = 3):
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    test = ['600031','600745','000977','002241']
+    test = ['515880','515050']
+    #test = ['000977','600745','002241','000333']
     if('515880' in test or '515050' in test):
         data = loadLocalDataIndex(test,'2019-01-01',endtime)
     else:
@@ -2290,9 +2291,17 @@ def backtestv2(holdingperc = 3):
 
     print('*' * 100)
     print('analyse account profit')
-    Risk = QA.QA_Risk(Account)
-    Risk.assets.plot()
-    print(Risk.profit_construct)
+    if ('515880' in test or '515050' in test):
+        market_data = QA.QA_fetch_index_day_adv(Account.code,
+                                                  Account.start_date,
+                                                  Account.end_date)
+
+        Risk = QA.QA_Risk(Account,market_data=market_data,if_fq=False)
+        print(Risk.profit_construct)
+    else:
+        Risk = QA.QA_Risk(Account)
+        #Risk.assets.plot()
+        print(Risk.profit_construct)
     print('winning ratio is {}'.format(winRatio(Account)))
 
 

@@ -147,7 +147,7 @@ def triNetV2detect(codes, start='2019-01-01', freq='15min', short=5, long=10):
             sellres.append(code)
     return buyres, sellres
 
-def TrendWeekMin(codes, start='2019-01-01', freq='15min', short=20, long=60):
+def TrendWeekMin(codes, start='2019-01-01', freq='15min', short=20, long=60,type='stock'):
     # get today's date in %Y-%m-%d
     cur = datetime.datetime.now()
     mon = str(cur.month)
