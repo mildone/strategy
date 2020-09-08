@@ -160,12 +160,21 @@ def TrendWeekMin(codes, start='2019-01-01', freq='15min', short=20, long=60,type
     et = str(cur.year) + '-' + mon + '-' + day
 
     #wstart = '2018-01-01'
-    buyres = ['buy ']
-    sellres = ['sell ']
+    if(type=='index'):
+        buyres = ['buyetf ']
+        sellres = ['selletf ']
+    else:
+        buyres = ['buystock ']
+        sellres = ['sellstock ']
     # now let's get today data from net, those are DataStructure
-    daydata = QA.QA_fetch_stock_day_adv(codes, start, et)
+    if(type=='index'):
+        daydata = QA.QA_fetch_index_day_adv(codes, start, et)
+        # also min data for analysis
+        mindata = QA.QA_fetch_index_min_adv(codes, start, et, frequence=freq)
+    else:
+        daydata = QA.QA_fetch_stock_day_adv(codes, start, et)
     # also min data for analysis
-    mindata = QA.QA_fetch_stock_min_adv(codes, start, et, frequence=freq)
+        mindata = QA.QA_fetch_stock_min_adv(codes, start, et, frequence=freq)
 
     for code in codes:
         print('deal with {}'.format(code))
@@ -173,11 +182,17 @@ def TrendWeekMin(codes, start='2019-01-01', freq='15min', short=20, long=60,type
             code).data  # this is only the data till today, then contact with daydata ms.select_code('000977').data
 
         try:
-            td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,et,et)
+            if(type=='index'):
+                td = QA.QAFetch.QATdx.QA_fetch_get_index_day(code, et, et)
+            else:
+                td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,et,et)
             print(td)
         except:
             print('None and try again')
-            td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,et,et,if_fq='bfq')
+            if(type=='index'):
+                td = QA.QAFetch.QATdx.QA_fetch_get_index_day(code, et, et, if_fq='bfq')
+            else:
+                td = QA.QAFetch.QATdx.QA_fetch_get_stock_day(code,et,et,if_fq='bfq')
         td.set_index(['date','code'],inplace=True)
         td.drop(['date_stamp'], axis=1, inplace=True)
         td.rename(columns={'vol': 'volume'}, inplace=True)
@@ -196,8 +211,10 @@ def TrendWeekMin(codes, start='2019-01-01', freq='15min', short=20, long=60,type
         # start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
         # end = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
         md = mindata.select_code(code).data
-
-        m15 = QA.QA_fetch_get_stock_min('tdx', code, et, et, level=freq)
+        if(type=='index'):
+            m15 = QA.QA_fetch_get_index_min('tdx', code, et, et, level=freq)
+        else:
+            m15 = QA.QA_fetch_get_stock_min('tdx', code, et, et, level=freq)
         # convert online data to adv data(basically multi_index setting, drop unused column and contact 2 dataframe as 1)
         # this is network call
         m15.set_index(['datetime', 'code'], inplace=True)
@@ -268,24 +285,42 @@ def sendmail(content):
 
     
 if __name__ == "__main__":
+    import warnings
+    warnings.filterwarnings('ignore')
     cl = ['000977', '600745', '002889', '600340', '000895', '600019', '600028',
           '601857', '600585', '002415', '002475', '600031', '600276', '600009', '601318',
           '000333', '600031', '002384', '002241']
+    etf = ['515880','515050']
     print('>'*100)
     buy,sell = TrendWeekMin(cl)
+    eb,es = TrendWeekMin(etf,type='index')
+
+
+
+
     if(len(buy)==1):
-        buy[0] = 'buy nothing'
+        buy[0] = 'buy nostock'
     if(len(sell)==1):
-        sell[0]='sell nothing'
+        sell[0]='sell nostock'
+    if(len(eb)==1):
+        eb[0] ='buy noetf'
+    if(len(es)==1):
+        es[0] = 'sell noetf'
     #buy.insert(0,'buy ')
     #sell.insert(0,'sell ')
     buy.extend(sell)
+    buy.extend(eb)
+    buy.extend(es)
+
+    #if(len(buy)>4):
+        #print(' '.join(buy))
 
     # codelist1.extend(codelist4)
     #message = list(set(buy))
 
+
     print("sending mail")
-    if(len(buy)>2):
+    if(len(buy)>4 ):
         sendmail(' '.join(buy))
     
 
