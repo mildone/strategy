@@ -449,6 +449,21 @@ def loadLocalData(stocks, start_date='2018-03-15', end_date='2019-09-07'):
     return data
 
 
+
+def loadLocalDataIndex(stocks, start_date='2018-03-15', end_date='2020-08-01'):
+    """
+    data() as pdDataFrame
+    stocks could be list of all the stock or some. if you pass single one e.g. 000001 it will get one only
+    to get dedicated stock, using below method, and notice stockp() will be dataFrame
+    stockp = data.select_code(stock)
+
+
+    """
+    QA.QA_util_log_info('load data from local DB')
+    data = QA.QA_fetch_index_day_adv(stocks, start_date, end_date)
+    return data
+
+
 def loadFromCopy(file):
     """
     loaddata from file copy
@@ -1891,14 +1906,20 @@ def trendWeekMinv3(sample,short=20, long=60, freq='15min'):
     wstart = '2010-01-01'
     code = sample.index.get_level_values('code')[-1]
     wend = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
-    temp = QA.QA_fetch_stock_day_adv(code,wstart,wend).data
+    if(code == '515880' or code=='515050'):
+        temp= QA.QA_fetch_index_day_adv(code,wstart,wend).data
+    else:
+        temp = QA.QA_fetch_stock_day_adv(code,wstart,wend).data
     wd = wt.wds(temp)
     wd = wt.TrendDetect(wd)
     bechmark = wd.BIAS.max() * 0.97
 
     start = sample.index.get_level_values(dayindex)[0].strftime(dayformate)
     end = sample.index.get_level_values(dayindex)[-1].strftime(dayformate)
-    mindata = QA.QA_fetch_stock_min_adv(sample.index.get_level_values('code')[0], start, end, frequence= freq)
+    if (code == '515880' or code == '515050'):
+        mindata = QA.QA_fetch_index_min_adv(sample.index.get_level_values('code')[0], start, end, frequence=freq)
+    else:
+        mindata = QA.QA_fetch_stock_min_adv(sample.index.get_level_values('code')[0], start, end, frequence= freq)
     ms = mindata.data
     # print(sample)
     ms['short'] = QA.EMA(ms.close, short)
@@ -2141,16 +2162,22 @@ def backtestv2(holdingperc = 3):
     cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
     #endtime = '2020-06-01'
-    endtime = '2020-07-20'
+    endtime = '2020-07-30'
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    test = ['000977']
-    data = loadLocalData(test, '2019-01-01', endtime)
-    data = data.to_qfq()
+    test = ['600031','600745','000977','002241']
+    if('515880' in test or '515050' in test):
+        data = loadLocalDataIndex(test,'2019-01-01',endtime)
+    else:
+        data = loadLocalData(test, '2019-01-01', endtime)
+    if ('515880' in test or '515050' in test):
+        pass
+    else:
+        data = data.to_qfq()
     print('*' * 100)
     print('prepare data for back test')
     #no qfq, 15/10, with qfq,
