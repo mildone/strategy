@@ -2162,19 +2162,19 @@ def backtestv2(holdingperc = 3):
     cur = datetime.datetime.now()
     # endtime = str(cur.year) + '-' + str(cur.month) + '-' + str(cur.day)
     #endtime = '2020-06-01'
-    endtime = '2020-07-30'
+    endtime = '2020-09-30'
     cl = ['000977', '600745','002889','600340','000895','600019','600028',
           '601857','600585','002415','002475','600031','600276','600009','601318',
           '000333','600031','002384','002241','600703','000776','600897','600085']
     codelist2.extend(cl)
     codelist = list(set(codelist2))
     # data = loadLocalData(cl, '2019-01-01', endtime)
-    test = ['515880','515050']
+    test = []
     #test = ['000977','600745','002241','000333']
     if('515880' in test or '515050' in test):
-        data = loadLocalDataIndex(test,'2019-01-01',endtime)
+        data = loadLocalDataIndex(cl,'2019-01-01',endtime)
     else:
-        data = loadLocalData(test, '2019-01-01', endtime)
+        data = loadLocalData(cl, '2019-01-01', endtime)
     if ('515880' in test or '515050' in test):
         pass
     else:

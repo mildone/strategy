@@ -414,7 +414,7 @@ def getWeekDate(daytime):
     # return Timestamp('2020-05-11 00:00:00')
     return daytime + dateutil.relativedelta.relativedelta(days=(6 - daytime.dayofweek))
 
-def prepareData(code,start='2019-01-01',end = 'cur', cg='stock',source='DB',frequence='day'):
+def prepareData(code,start='2017-01-01',end = 'cur', cg='stock',source='DB',frequence='day'):
     if(end == 'cur'):
         cur = datetime.datetime.now()
         mon = str(cur.month)
@@ -499,6 +499,7 @@ def prepareData(code,start='2019-01-01',end = 'cur', cg='stock',source='DB',freq
 
 def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt='SM',nm=3,bias=True):
     dd = prepareData(code,cg=cg)
+    
     PlotBySe(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln,plot=pt,numofax=nm,bias=bias)
 
 
@@ -506,5 +507,6 @@ def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt=
 if __name__ == "__main__":
 
     forceANA('000977',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
+    api = QA.QA_TTSBroker()
 
 
