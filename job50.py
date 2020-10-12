@@ -322,6 +322,6 @@ if __name__ == "__main__":
     print("sending mail")
     if(len(buy)>4 ):
         sendmail(' '.join(buy))
-    
+
 
 
