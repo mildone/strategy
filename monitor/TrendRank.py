@@ -28,6 +28,15 @@ def TrendDivergence(day, short=20, mid=60, long=120):
     day['ML'] = (day.mid - day.long) * 100 / day.long
     return day
 
+def TrendStrength(day):
+    day['TS'] = (day.close > day.short).astype(int) + (day.close > day.sh).astype(int) + (day.close > day.mid).astype(int) + \
+                (day.close > day.mi).astype(int) + (day.sh > day.mi).astype(int)
+    day['RTS'] = (day.short>day.close).astype(int) + (day.sh>day.close).astype(int) + \
+                 (day.mid>day.close).astype(int) + (day.mi>day.close).astype(int)+(day.mi>day.sh).astype(int)
+
+    return day
+
+
 def TrendRank(start = '2015-01-01'):
     codelist3 = QA.QA_fetch_stock_block_adv().get_block('云计算').code[:]
     codelist1 = QA.QA_fetch_stock_block_adv().get_block('华为概念').code[:]

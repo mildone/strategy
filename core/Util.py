@@ -139,6 +139,11 @@ def divergence( day,short = 20, mid = 60, long = 120):
     day['SMAcc'] = change(day.SM)
     #Mid and Long MA
     day['MLAcc'] = change(day.ML)
+    day['TS'] = (day.close > day.short).astype(int) + (day.close > day.sh).astype(int) + (day.close > day.mid).astype(int)\
+                + (day.close > day.mi).astype(int) + (day.sh > day.mi).astype(int)
+    day['RTS'] = (day.short > day.close).astype(int) + (day.sh > day.close).astype(int) + (day.mid > day.close).astype(int)\
+                 + (day.mi > day.close).astype(int) + (day.mi > day.sh).astype(int)
+
     return day
 
 
@@ -207,7 +212,8 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
 
         # plot SML Position for later simulation
         ratio = day.low.median() * 0.03
-
+        value = np.where(day.RTS > 2, day.close, 0)
+        ax2.fill_between(ind, 0, value)
         ax2.text(N - short, day.high[N - short] + ratio,
                  str(day.close[N - short]),
                  fontdict={'size': '12', 'color': 'b'})
@@ -323,6 +329,10 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         #ax2.set_title("candlestick", fontsize='xx-large', fontweight='bold')
 
         mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
+        value = np.where(day.RTS>2,day.close,0)
+        ax2.fill_between(ind,0,value,color='green',alpha=0.3)
+
+
         if ('EA' in type):
             # both EMA and MA are required
             if ('S' in plot):
