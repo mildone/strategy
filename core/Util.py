@@ -330,7 +330,9 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
 
         mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
         value = np.where(day.RTS>2,day.close,0)
+        win = np.where(day.TS>3,day.close,0)
         ax2.fill_between(ind,0,value,color='green',alpha=0.3)
+        ax2.fill_between(ind,0,win,color='red',alpha=0.3)
 
 
         if ('EA' in type):
