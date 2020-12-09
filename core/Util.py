@@ -331,8 +331,12 @@ def PlotBySe(day, short = 20, mid = 60, long = 120,type='EA',zoom=100,plot='SML'
         mpf.candlestick_ochl(ax2, quotes, width=0.6, colorup='r', colordown='g', alpha=1.0)
         value = np.where(day.RTS>2,day.close,0)
         win = np.where(day.TS>3,day.close,0)
+        danger = np.where(day.TS<3,day.close,0)
+        #ax2.fill_between(ind,0,value,color='green',alpha=0.3)
         ax2.fill_between(ind,0,value,color='green',alpha=0.3)
         ax2.fill_between(ind,0,win,color='red',alpha=0.3)
+        #v = np.where(day.single>0,day.close,0)
+        #ax2.fill_between(ind,0,v,color='red',alpha=0.3)
 
 
         if ('EA' in type):
@@ -511,14 +515,15 @@ def prepareData(code,start='2017-01-01',end = 'cur', cg='stock',source='DB',freq
 
 def forceANA(code,zo=100,ty = 'EA',cg = 'stock', st = 20, mi = 60, ln = 120, pt='SM',nm=3,bias=True):
     dd = prepareData(code,cg=cg)
-    
+    #import quant.Util as ut
+    #ut.trendWeekMinv3(dd)
     PlotBySe(dd,type = ty,zoom = zo, short = st, mid = mi, long = ln,plot=pt,numofax=nm,bias=bias)
 
 
 
 if __name__ == "__main__":
 
-    forceANA('000977',zo=300,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
-    api = QA.QA_TTSBroker()
+    forceANA('000977',zo=400,ty = 'EA', cg = 'stock', st = 20, mi = 60, ln = 120, pt='SML',nm=3,bias=True)
+    #api = QA.QA_TTSBroker()
 
 
